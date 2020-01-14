@@ -1,0 +1,34 @@
+{
+  "name": "my_fe_boilerplate",
+  "version": "1.0.0",
+  "description": "kampfer's front-end boilerplate",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --config scripts/webpack.dev.config.js --open",
+    "example": "webpack-dev-server --config scripts/webpack.example.config.js --open",
+    "test": "webpack-dev-server --config scripts/webpack.test.config.js --open",
+    "analyse": "webpack --profile --json > stats.json"
+  },
+  "author": "https://github.com/kampfer",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.2.0",
+    "eslint": "^6.7.2",
+    "file-loader": "^4.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "url-loader": "^2.1.0",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.5.5"
+  }
+}
