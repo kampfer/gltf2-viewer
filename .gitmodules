@@ -1,0 +1,3 @@
+[submodule "src/webglRenderEngine"]
+	path = src/webglRenderEngine
+	url = git@github.com:kampfer/webgl-render-engine.git

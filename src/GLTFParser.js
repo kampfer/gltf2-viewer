@@ -1,13 +1,13 @@
-import Scene from '../../src/Scene';
-import Mesh from '../../src/Mesh';
-import Geometry from '../../src/geometries/Geometry';
-import Material from '../../src/materials/Material';
+import Scene from 'webglRenderEngine/Scene';
+import Mesh from 'webglRenderEngine/Mesh';
+import Geometry from 'webglRenderEngine/geometries/Geometry';
+import Material from 'webglRenderEngine/materials/Material';
 import path from 'path';
-import BufferAttribute from '../../src/renderers/WebGLAttribute';
-import GraphObject from '../../src/GraphObject';
-import PerspectiveCamera from '../../src/cameras/PerspectiveCamera';
-import OrthographicCamera from '../../src/cameras/OrthographicCamera';
-import Mat4 from '../../src/math/Mat4';
+import BufferAttribute from 'webglRenderEngine/renderers/WebGLAttribute';
+import GraphObject from 'webglRenderEngine/GraphObject';
+import PerspectiveCamera from 'webglRenderEngine/cameras/PerspectiveCamera';
+import OrthographicCamera from 'webglRenderEngine/cameras/OrthographicCamera';
+import Mat4 from 'webglRenderEngine/math/Mat4';
 
 const attributeNameMap = {
     'POSITION': 'position',
