@@ -14,6 +14,7 @@
 
         outline: 2px dashed #92b0b3;
         outline-offset: -10px;
+        transition: outline-offset .15s ease-in-out, background-color .15s linear;
 
         .box__icon {
             width: 100%;
@@ -24,7 +25,12 @@
         }
 
         .box__file {
-            display: none;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
         }
 
         label {
@@ -41,6 +47,12 @@
         .box__button {
             display: none;
         }
+    }
+
+    .box.is-dragover {
+        outline-offset: -20px;
+        outline-color: #c8dadf;
+        background-color: #fff;
     }
 }
 
