@@ -1,10 +1,10 @@
-// import './main.less';
+import './main.less';
 
-import WebGLRenderer from 'webglRenderEngine/renderers/WebGLRenderer';
-import PerspectiveCamera from 'webglRenderEngine/cameras/PerspectiveCamera';
+import WebGLRenderer from '@webglRenderEngine/renderers/WebGLRenderer';
+import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import GLTFLoader from './GLTFLoader';
-import OrbitCameraController from 'webglRenderEngine/cameras/OrbitCameraController';
-import Box3 from 'webglRenderEngine/math/Box3';
+import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraController';
+import Box3 from '@webglRenderEngine/math/Box3';
 
 let glTFLoader = new GLTFLoader(),
     gltfPath = location.search.match(/\?gltf=(.*)/);
