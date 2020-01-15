@@ -39,7 +39,7 @@ glTFLoader.load(gltfPath)
             index = 0;
         if (cameras.length > 0 && cameras[index]) {
             camera = cameras[index];
-        } else {                
+        } else {
             camera = new PerspectiveCamera(90 * (Math.PI / 180), window.innerWidth / window.innerHeight, 0.1, length * 100);
             scene.add(camera);
         }

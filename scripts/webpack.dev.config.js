@@ -12,13 +12,14 @@ let devConfig = Object.assign(config, {
     devServer: {
         contentBase: './dist'
     },
-    entry: path.join(__dirname, '../src/index'),
-    plugins: [
-        new HtmlWebpackPlugin({
-            filename: 'index.html',
-            template: path.join(__dirname, '../src/index.html')
-        })
-    ]
+    entry: path.join(__dirname, '../src/index')
 });
+
+devConfig.plugins.push(
+    new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: path.join(__dirname, '../src/index.html')
+    })
+);
 
 module.exports = devConfig;
