@@ -1,12 +1,12 @@
 {
-  "name": "my_fe_boilerplate",
+  "name": "gltf2-viwer",
   "version": "1.0.0",
-  "description": "kampfer's front-end boilerplate",
+  "description": "a gltf2 viewer with webgl",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server --config scripts/webpack.dev.config.js --open",
-    "example": "webpack-dev-server --config scripts/webpack.example.config.js --open",
-    "test": "webpack-dev-server --config scripts/webpack.test.config.js --open",
+    "dev": "webpack-dev-server --config scripts/webpack.dev.config.js",
+    "example": "webpack-dev-server --config scripts/webpack.example.config.js",
+    "test": "webpack-dev-server --config scripts/webpack.test.config.js",
     "analyse": "webpack --profile --json > stats.json"
   },
   "author": "https://github.com/kampfer",
