@@ -8,7 +8,8 @@ export default class FileUploader extends React.Component {
         super(props);
 
         this.state = {
-            active: false
+            active: false,
+            successCallback: props.onSuccess
         };
 
         this.handleDragStart = this.handleDragStart.bind(this);
@@ -18,7 +19,7 @@ export default class FileUploader extends React.Component {
 
     render() {
         return (
-            <div className="container">
+            <div className={`file-uploader ${this.props.hide ? 'hide' : ''}`}>
                 <form
                     className={this.state.active === true ? 'box is-dragover' : 'box'}
                     method="post"
@@ -65,7 +66,11 @@ export default class FileUploader extends React.Component {
     
     handleDrop(e) {
         this.handleDragStop(e);
-        console.log(e.dataTransfer.files);
+
+        let callback = this.state.successCallback
+        if (callback) {
+            callback(e.dataTransfer.files);
+        }
     }
 
 }
