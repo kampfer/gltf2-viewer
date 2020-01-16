@@ -1,5 +1,3 @@
-import './main.less';
-
 import WebGLRenderer from '@webglRenderEngine/renderers/WebGLRenderer';
 import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import GLTFLoader from './GLTFLoader';

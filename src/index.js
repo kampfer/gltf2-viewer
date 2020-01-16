@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import './gltf';
-import FileUploader from './FileUploader';
+import App from './App';
 
 ReactDOM.render(
-    <FileUploader />,
+    <App />,
     document.getElementById('root')
 );
