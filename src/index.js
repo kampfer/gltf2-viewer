@@ -2,9 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import './gltf';
-import fileUploader from './FileUploader';
+import FileUploader from './FileUploader';
 
 ReactDOM.render(
-    fileUploader(),
+    <FileUploader />,
     document.getElementById('root')
 );
