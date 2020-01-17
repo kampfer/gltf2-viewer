@@ -41,29 +41,10 @@ const accessorTypeToNumComponentsMap = {
 
 export default class GLTFParser {
 
-    constructor() {
+    constructor(opts) {
+        this._loader = opts.loader;
         this._bufferCache = new WeakMap();
         this._bufferViewCache = [];
-        this._requesting = {};
-    }
-
-    setBaseUrl(baseUrl) {
-        this._baseUrl = baseUrl;
-    }
-
-    request(url, opts) {
-        url = path.join(this._baseUrl, url);
-        if (!this._requesting[url]) {
-            this._requesting[url] = fetch(url, opts)
-                .then((res) => {
-                    delete this._requesting[url];
-                    if (res.ok) {
-                        let buffer = res.arrayBuffer();
-                        return buffer;
-                    }
-                });
-        }
-        return this._requesting[url];
     }
 
     parse(data) {
@@ -370,7 +351,7 @@ export default class GLTFParser {
 
             return Promise.resolve(bufferView.buffer);
         } else {
-            return this.request(bufferDef.uri)
+            return this._loader.request(bufferDef.uri)
                 .then((res) => {
                     let buffer = this._bufferCache.get(bufferDef);
                     if (!buffer) {
