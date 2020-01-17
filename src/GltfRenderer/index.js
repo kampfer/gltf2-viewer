@@ -35,8 +35,6 @@ export default class GltfRenderer extends React.Component {
     componentDidUpdate() {
         let files = this.props.files;
         if (files) {
-            console.log(files);
-
             let gltfFile,
                 fileMap = {};
             // e.dataTransfer.files是一个filelist不是数组，必须手动遍历。
