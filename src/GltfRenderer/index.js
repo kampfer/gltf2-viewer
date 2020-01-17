@@ -7,7 +7,7 @@ import GLTFLoader from './GLTFLoader';
 
 import './index.less';
 
-export default class Gltf2Viewer extends React.Component {
+export default class GltfRenderer extends React.Component {
 
     constructor(props) {
         super(props);
@@ -74,7 +74,7 @@ export default class Gltf2Viewer extends React.Component {
 
     render() {
         return (
-            <canvas ref={this.webglCanvas}></canvas>
+            <canvas ref={this.webglCanvas} style={{display: this.props.hide ? 'none' : ''}}></canvas>
         )
     }
 
