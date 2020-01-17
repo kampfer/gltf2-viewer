@@ -4,6 +4,7 @@ import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraController';
 import Box3 from '@webglRenderEngine/math/Box3';
 import GLTFLoader from './GLTFLoader';
+import path from 'path';
 
 import './index.less';
 
@@ -53,15 +54,19 @@ export default class GltfRenderer extends React.Component {
                 return;
             }
             
-            let gltfURL = gltfFile,
-                blobURLs = [];
-            if (typeof gltfURL !== 'string') {
-                gltfURL = URL.createObjectURL(gltfFile);
-                blobURLs.push(gltfURL);
-            }
+            let blobURLs = [];
+            this.gltfLoader.setURLModifier(function (url) {
+                if (url in fileMap) {
+                    let blobUrl = URL.createObjectURL(fileMap[url]);
+                    blobURLs.push(blobUrl);
+                    return blobUrl;
+                }
+                return url;
+            });
+            // this.gltfLoader.setBaseUrl(path.dirname(gltfURL));
 
             this.gltfLoader
-                .load(gltfURL)
+                .load(gltfFile.name)
                 .then((gltf) => {
                     this.renderGltf(gltf);
                 });
