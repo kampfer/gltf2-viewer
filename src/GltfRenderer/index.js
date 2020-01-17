@@ -29,7 +29,7 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentWillUnmount() {
-        this.webglRenderer.destory();
+        this.webglRenderer.destroy();
     }
 
     componentDidUpdate() {
