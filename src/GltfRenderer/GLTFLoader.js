@@ -28,13 +28,9 @@ export default class GLTFLoader {
             modifiedUrl = this._urlModifier(url);
         }
 
-        console.log('make request');
+        console.log(`request: ${url}(${modifiedUrl})`);
         let p = fetch(modifiedUrl).then(function (res) {
-            console.log(res);
             if (res.ok) {
-                console.log(typeof res);
-                // return res.json();
-                console.log(path.extname(url));
                 if (path.extname(url) === '.gltf') {
                     return res.json();
                 } else {
@@ -44,6 +40,8 @@ export default class GLTFLoader {
                 throw('Network response was not ok.');
             }
         });
+
+        this._requstingPool[url] = p;
 
         return p;
     }
