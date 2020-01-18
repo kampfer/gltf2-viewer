@@ -17,8 +17,6 @@ export default class GltfRenderer extends React.Component {
             files: props.files
         };
 
-        this.gltfLoader = new GLTFLoader(); 
-
         this.webglCanvas = React.createRef();
     }
 
@@ -32,7 +30,11 @@ export default class GltfRenderer extends React.Component {
         this.webglRenderer.destroy();
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
+        if (prevProps.files === this.props.files) {
+            return;
+        }
+
         let files = this.props.files;
         if (files) {
             let gltfFile,
@@ -53,6 +55,8 @@ export default class GltfRenderer extends React.Component {
             }
             
             let blobURLs = [];
+            // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
+            this.gltfLoader = new GLTFLoader();
             this.gltfLoader.setURLModifier(function (url) {
                 if (url in fileMap) {
                     let blobUrl = URL.createObjectURL(fileMap[url]);
@@ -110,8 +114,11 @@ export default class GltfRenderer extends React.Component {
         camera.position.z += length;
         camera.lookAt(center);
 
-        let cameraController = new OrbitCameraController(camera, renderer.domElement);
-        cameraController.target = center;
+        if (this.cameraController) {
+            this.cameraController.destroy();
+        }
+        this.cameraController = new OrbitCameraController(camera, renderer.domElement);
+        this.cameraController.target = center;
 
         function animate() {
             renderer.render(scene, camera);
