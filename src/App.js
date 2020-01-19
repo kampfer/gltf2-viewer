@@ -1,6 +1,7 @@
 import React from 'react';
 import FileReader from './FileReader';
 import GltfRenderer from './GltfRenderer';
+import Stats from './Stats';
 
 import './main.less';
 
@@ -17,6 +18,8 @@ export default class App extends React.Component {
 
         this.showFileReader = this.showFileReader.bind(this);
         this.showGltfRenderer = this.showGltfRenderer.bind(this);
+
+        this.stats = React.createRef();
     }
 
     showFileReader(e) {
@@ -52,8 +55,14 @@ export default class App extends React.Component {
                 onDragLeave={this.stopDefault}
                 onDrop={this.stopDefault}
             >
+                <Stats ref={this.stats}/>
                 <FileReader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
-                <GltfRenderer files={this.state.files} hide={this.state.hideGltfRenderer} />
+                <GltfRenderer
+                    files={this.state.files}
+                    hide={this.state.hideGltfRenderer}
+                    beforeRender={() => this.stats.current.begin()}
+                    afterRender={() => this.stats.current.end()}
+                />
             </div>
         );
     }
