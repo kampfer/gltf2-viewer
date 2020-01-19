@@ -4,7 +4,6 @@ import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraController';
 import Box3 from '@webglRenderEngine/math/Box3';
 import GLTFLoader from './GLTFLoader';
-import path from 'path';
 
 import './index.less';
 
@@ -89,7 +88,8 @@ export default class GltfRenderer extends React.Component {
         console.log('gltf:', gltf);
 
         let scene = gltf.scenes[gltf.scene],
-            renderer = this.webglRenderer;
+            renderer = this.webglRenderer,
+            self = this;
 
         let cameras = []
         scene.children.forEach((child) => {
@@ -121,7 +121,9 @@ export default class GltfRenderer extends React.Component {
         this.cameraController.target = center;
 
         function animate() {
+            if (self.props.beforeRender) self.props.beforeRender();
             renderer.render(scene, camera);
+            if (self.props.afterRender) self.props.afterRender();
             requestAnimationFrame(animate);
         }
 
