@@ -13,24 +13,26 @@ class Panel extends React.Component {
             path : '',
             data: [],
             max: -Infinity,
-            min: 0,
-            width: 80,
-            height: 48,
+            min: +Infinity,
             cur: 0
         };
 
+        this.textPadding = [2, 0, 0, 3];
+
+        this.diagramPadding = [0, 3, 3, 3];
+
         this.textOffset = {
-            left: 0,
-            top: 9, 
-            width: this.state.width,
-            height: 15
+            left: this.textPadding[3],
+            top: this.textPadding[0],
+            width: props.width - this.textPadding[1] - this.textPadding[3],
+            height: props.height / 3 - this.textPadding[0] - this.textPadding[2]
         };
 
         this.diagramOffset = {
-            left: 0,
-            top: this.textOffset.height,
-            width: 80,
-            height: this.state.height - this.textOffset.height
+            left: this.diagramPadding[3],
+            top: props.height / 3 + this.diagramPadding[0],
+            width: props.width - this.diagramPadding[1] - this.diagramPadding[3],
+            height: props.height * 2 / 3 - this.diagramPadding[0] - this.diagramPadding[2]
         };
     }
 
@@ -39,32 +41,36 @@ class Panel extends React.Component {
             min = this.state.min;
         if (v > max) {
             max = v; 
-        }
-        if (v < min) {
+        } else if (v < min) {
             min = v;
         }
 
         let oldData = this.state.data,
-            newData = [...oldData, v];
-        if (newData.length > 50) {
+            newData = [...oldData, v],
+            diagramOffset = this.diagramOffset,
+            count = diagramOffset.width;
+        if (newData.length > count) {
             newData.shift();
         }
 
         let path = '',
-            diagramOffset = this.diagramOffset,
             bottom = diagramOffset.top + diagramOffset.height,
             right = diagramOffset.left + diagramOffset.width;
-        for(let i = newData.length - 1; i >= 0; i--) {
+        for(let i = count - 1; i >= 0; i--) {
+            let item = newData[count - 1 - i];
+            if (item === undefined) {
+                continue;
+            }
+
             let x = diagramOffset.left + i,
-                item = newData[i],
-                y = diagramOffset.top + (max - item) / (max - min) * diagramOffset.height;
-            if (i === newData.length - 1) {
+                y = bottom - (item - 0) / (max - 0) * diagramOffset.height;
+            if (i === count - 1) {
                 path += `M ${x} ${y}`;
             } else {
                 path += `L ${x} ${y}`;
             }
         }
-        path += `V ${bottom} H ${right} Z`;
+        path += `V ${bottom} H ${right} Z`
 
         this.setState({
             cur: v,
@@ -78,6 +84,8 @@ class Panel extends React.Component {
     render() {
         let props = this.props,
             state = this.state,
+            textOffset = this.textOffset,
+            // textPadding = this.textPadding,
             svgStyle = {
                 display: props.hide ? 'none' : '',
                 backgroundColor: props.backgroundColor
@@ -88,13 +96,17 @@ class Panel extends React.Component {
                 fontFamily: 'Helvetica,Arial,sans-serif',
                 fontWeight: 'bold'
             },
+            fontX = textOffset.left,
+            fontY = textOffset.top,
             pathStyle={
                 fill: props.fontColor
-            };
+            },
+            min = state.min === Infinity ? '?' : Math.round(state.min),
+            max = state.max === -Infinity ? '?' : Math.round(state.max);
         return (
-            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="48" style={svgStyle}>
-                <text x={this.textOffset.left} y={this.textOffset.top} style={fontStyle}>
-                    {Math.round(state.cur)} ({props.name}) {Math.round(state.min)}-{Math.round(state.max)}
+            <svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} style={svgStyle}>
+                <text x={fontX} y={fontY} style={fontStyle} alignmentBaseline="hanging">
+                    {Math.round(state.cur)} ({props.name}) {min}-{max}
                 </text>
                 <path d={state.path} style={pathStyle} />
             </svg>
@@ -196,14 +208,16 @@ export default class Stats extends React.Component {
         console.log('stats render');
         let style = {
             position: 'fixed',
-            left: 0,
-            top: 0,
+            left: 5,
+            top: 5,
             zIndex: 999
         };
         return (
             <div onClick={this.handleClick} style={style}>
                 { this.panels.map( (panel, index) => 
                     <Panel
+                        width="80"
+                        height="48"
                         key={panel.name}
                         ref={panel.ref}
                         name={panel.name}
