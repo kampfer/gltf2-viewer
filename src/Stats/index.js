@@ -16,16 +16,12 @@ class Panel extends React.Component {
             min: 0,
             width: 80,
             height: 48,
-            style: {
-                position: 'absolute',
-                left: '0',
-                top: '0'
-            }
+            cur: 0
         };
 
         this.textOffset = {
             left: 0,
-            top: 0, 
+            top: 9, 
             width: this.state.width,
             height: 15
         };
@@ -71,6 +67,7 @@ class Panel extends React.Component {
         path += `V ${bottom} H ${right} Z`;
 
         this.setState({
+            cur: v,
             data: newData,
             path,
             max,
@@ -79,26 +76,66 @@ class Panel extends React.Component {
     }
 
     render() {
+        let props = this.props,
+            state = this.state,
+            svgStyle = {
+                display: props.hide ? 'none' : '',
+                backgroundColor: props.backgroundColor
+            },
+            fontStyle= {
+                fill: props.fontColor,
+                fontSize: 9,
+                fontFamily: 'Helvetica,Arial,sans-serif',
+                fontWeight: 'bold'
+            },
+            pathStyle={
+                fill: props.fontColor
+            };
         return (
-            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="48" style={this.state.style}><path d={this.state.path} /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="48" style={svgStyle}>
+                <text x={this.textOffset.left} y={this.textOffset.top} style={fontStyle}>
+                    {Math.round(state.cur)} ({props.name}) {Math.round(state.min)}-{Math.round(state.max)}
+                </text>
+                <path d={state.path} style={pathStyle} />
+            </svg>
         );
     }
 
 }
 
-let beginTime, prevSecond, frames = 0;
+let beginTime, prevSecond = 0, frames = 0;
 
 export default class Stats extends React.Component {
 
     constructor(props) {
         super(props);
 
+        this.state = { currentPanel: 0 };
+
         this.handleClick = this.handleClick.bind(this);
 
-        this.msPanel = React.createRef();
-        this.fpsPanel = React.createRef();
+        this.panels = [
+            {
+                name: 'FPS',
+                ref: React.createRef(),
+                backgroundColor: '#002',
+                fontColor: '#0ff'
+            },
+            {
+                name: 'MS',
+                ref: React.createRef(),
+                backgroundColor: '#020',
+                fontColor: '#0f0'
+            },
+            
+        ];
         if (supportMemory) {
-            this.memPanel = React.createRef();
+            this.panels.push({
+                name: 'MB',
+                ref: React.createRef(),
+                backgroundColor: '#201',
+                fontColor: '#f08'
+            });
         }
     }
 
@@ -106,21 +143,28 @@ export default class Stats extends React.Component {
         return (performance || Date).now();
     }
 
-    handleClick() {}
+    handleClick() {
+        let index = this.state.currentPanel;
+        this.selectPanel(++index % this.panels.length);
+    }
 
     begin() {
         beginTime = this.now();
     }
 
     end() {
+        let msPanel = this.getPannelByName('MS').ref.current,
+            fpsPanel = this.getPannelByName('FPS').ref.current,
+            mbPanel = this.getPannelByName('MB').ref.current;
+
         let time = this.now();
         // ms
-        this.msPanel.current.update(time - beginTime);
+        msPanel.update(time - beginTime);
 
         frames++;
         if (time - prevSecond >= 1000) {
             // frames
-            this.fpsPanel.current.update( ( frames * 1000 ) / ( time - prevSecond ) );
+            fpsPanel.update( ( frames * 1000 ) / ( time - prevSecond ) );
 
             prevSecond = time;
             frames = 0;
@@ -130,17 +174,44 @@ export default class Stats extends React.Component {
                     cur = memory.usedJSHeapSize / oneMB,
                     max = memory.jsHeapSizeLimit / oneMB;
                 // memory
-                this.memPanel.update(cur);
+                mbPanel.update(cur);
+            }
+        }
+    }
+
+    selectPanel(index) {
+        this.setState({ currentPanel: index });
+    }
+
+    getPannelByName(name) {
+        for(let i = 0, l = this.panels.length; i < l; i++) {
+            let panel = this.panels[i];
+            if (panel.name === name) {
+                return panel;
             }
         }
     }
 
     render() {
+        console.log('stats render');
+        let style = {
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            zIndex: 999
+        };
         return (
-            <div onClick={this.handleClick}>
-                <Panel ref={this.msPanel} />
-                <Panel ref={this.fpsPanel} />
-                { supportMemory && <Panel ref={this.memPanel}/> }
+            <div onClick={this.handleClick} style={style}>
+                { this.panels.map( (panel, index) => 
+                    <Panel
+                        key={panel.name}
+                        ref={panel.ref}
+                        name={panel.name}
+                        backgroundColor={panel.backgroundColor}
+                        fontColor={panel.fontColor}
+                        hide={index !== this.state.currentPanel}
+                    />
+                )}
             </div>
         );
     }
