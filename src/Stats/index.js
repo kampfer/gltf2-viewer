@@ -55,16 +55,14 @@ class Panel extends React.Component {
 
         let path = '',
             bottom = diagramOffset.top + diagramOffset.height,
-            right = diagramOffset.left + diagramOffset.width;
-        for(let i = count - 1; i >= 0; i--) {
-            let item = newData[count - 1 - i];
-            if (item === undefined) {
-                continue;
-            }
-
-            let x = diagramOffset.left + i,
+            right = diagramOffset.left + diagramOffset.width,
+            offset = count - newData.length;
+        for(let i = newData.length - 1; i >= 0; i--) {
+            let item = newData[i],
+                lastIndex = i + offset,
+                x = diagramOffset.left + lastIndex,
                 y = bottom - (item - 0) / (max - 0) * diagramOffset.height;
-            if (i === count - 1) {
+            if (i === newData.length - 1) {
                 path += `M ${x} ${y}`;
             } else {
                 path += `L ${x} ${y}`;
@@ -94,7 +92,10 @@ class Panel extends React.Component {
                 fill: props.fontColor,
                 fontSize: 9,
                 fontFamily: 'Helvetica,Arial,sans-serif',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                // 火狐中text元素不支持alignment-baseline，应该使用dominant-baseline
+                // https://github.com/ecomfe/zrender/issues/391
+                dominantBaseline: 'hanging'
             },
             fontX = textOffset.left,
             fontY = textOffset.top,
@@ -105,7 +106,7 @@ class Panel extends React.Component {
             max = state.max === -Infinity ? '?' : Math.round(state.max);
         return (
             <svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} style={svgStyle}>
-                <text x={fontX} y={fontY} style={fontStyle} alignmentBaseline="hanging">
+                <text x={fontX} y={fontY} style={fontStyle}>
                     {Math.round(state.cur)} ({props.name}) {min}-{max}
                 </text>
                 <path d={state.path} style={pathStyle} />
@@ -167,7 +168,11 @@ export default class Stats extends React.Component {
     end() {
         let msPanel = this.getPannelByName('MS').ref.current,
             fpsPanel = this.getPannelByName('FPS').ref.current,
+            mbPanel;
+
+        if (supportMemory) {
             mbPanel = this.getPannelByName('MB').ref.current;
+        }
 
         let time = this.now();
         // ms
