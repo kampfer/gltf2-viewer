@@ -69,6 +69,7 @@ export default class GltfRenderer extends React.Component {
             this.gltfLoader
                 .load(gltfFile.name)
                 .then((gltf) => {
+                    this.stopRender();
                     this.renderGltf(gltf);
                 });
 
@@ -82,6 +83,10 @@ export default class GltfRenderer extends React.Component {
         return (
             <canvas ref={this.webglCanvas} style={{display: this.props.hide ? 'none' : ''}}></canvas>
         )
+    }
+
+    stopRender() {
+        cancelAnimationFrame(this._animationTimer);
     }
 
     renderGltf(gltf) {
@@ -124,7 +129,7 @@ export default class GltfRenderer extends React.Component {
             if (self.props.beforeRender) self.props.beforeRender();
             renderer.render(scene, camera);
             if (self.props.afterRender) self.props.afterRender();
-            requestAnimationFrame(animate);
+            self._animationTimer = requestAnimationFrame(animate);
         }
 
         animate();
