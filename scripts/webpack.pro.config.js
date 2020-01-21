@@ -1,33 +1,22 @@
 const config = require('./webpack.config');
 const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let proConfig = Object.assign(config, {
     mode: 'production',
-    entry: {
-        main: path.join(__dirname, '../src/assets/main')
-    }
+    resolve: {
+        alias: {
+            '@webglRenderEngine': path.join(__dirname, '../src/webglRenderEngine/src')
+        }
+    },
+    entry: path.join(__dirname, '../src/index')
 });
 
 proConfig.plugins.push(
-    new MiniCssExtractPlugin({
-        filename: '[name].[hash].css',
-        chunkFilename: '[id].[hash].css'
+    new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: path.join(__dirname, '../src/index.html')
     })
 );
-
-proConfig.module.rules.push({
-    test: /\.less$/i,
-    use: [
-        {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-                hmr: false,
-            },
-        },
-        'css-loader',
-        'less-loader',
-    ],
-});
 
 module.exports = proConfig;

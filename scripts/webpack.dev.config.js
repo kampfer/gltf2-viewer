@@ -9,9 +9,6 @@ let devConfig = Object.assign(config, {
             '@webglRenderEngine': path.join(__dirname, '../src/webglRenderEngine/src')
         }
     },
-    devServer: {
-        contentBase: './dist'
-    },
     entry: path.join(__dirname, '../src/index')
 });
 

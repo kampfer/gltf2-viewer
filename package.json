@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack-dev-server --config scripts/webpack.dev.config.js",
     "example": "webpack-dev-server --config scripts/webpack.example.config.js",
-    "test": "webpack-dev-server --config scripts/webpack.test.config.js",
+    "build": "webpack --config scripts/webpack.pro.config.js",
     "analyse": "webpack --profile --json > stats.json"
   },
   "author": "https://github.com/kampfer",
@@ -17,6 +17,7 @@
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-react": "^7.8.3",
     "babel-loader": "^8.0.6",
+    "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^3.2.0",
     "eslint": "^6.7.2",
     "file-loader": "^4.2.0",
