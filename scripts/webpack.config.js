@@ -1,4 +1,6 @@
+const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     module: {
@@ -39,9 +41,15 @@ module.exports = {
         }]
     },
     plugins: [
+        new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
-            filename: '[name].css',
-            chunkFilename: '[id].css'
+            filename: '[name].[hash].css',
+            chunkFilename: '[id].[hash].css'
         })
-    ]
+    ],
+    output: {
+        filename: '[name].[hash].js',
+        chunkFilename: '[id].[hash].js',
+        path: path.join(__dirname, '../output')
+    }
 };
