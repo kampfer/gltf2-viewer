@@ -1,5 +1,5 @@
 import React from 'react';
-import FileReader from './FileReader';
+import GltfLoader from './GltfLoader';
 import GltfRenderer from './GltfRenderer';
 import Stats from './Stats';
 
@@ -11,7 +11,7 @@ export default class App extends React.Component {
         super(props);
 
         this.state = { 
-            files: null,
+            gltf: null,
             hideFileReader: false,
             hideGltfRenderer: true
         };
@@ -30,9 +30,9 @@ export default class App extends React.Component {
         });
     }
 
-    showGltfRenderer(files) {
+    showGltfRenderer(gltf) {
         this.setState({
-            files,
+            gltf,
             hideFileReader: true,
             hideGltfRenderer: false
         });
@@ -56,9 +56,9 @@ export default class App extends React.Component {
                 onDrop={this.stopDefault}
             >
                 <Stats ref={this.stats}/>
-                <FileReader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
+                <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                 <GltfRenderer
-                    files={this.state.files}
+                    gltf={this.state.gltf}
                     hide={this.state.hideGltfRenderer}
                     beforeRender={() => this.stats.current.begin()}
                     afterRender={() => this.stats.current.end()}

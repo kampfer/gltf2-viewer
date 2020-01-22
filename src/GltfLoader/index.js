@@ -1,4 +1,5 @@
 import React from 'react';
+import FileLoader from './FileLoader';
 
 import './index.less';
 
@@ -67,9 +68,51 @@ export default class FileReader extends React.Component {
     handleDrop(e) {
         this.handleDragStop(e);
 
-        let callback = this.state.successCallback
+        let callback = this.state.successCallback;
         if (callback) {
-            callback(e.dataTransfer.files);
+            this.loadGltf(e.dataTransfer.files).then(callback);
+        }
+    }
+
+    loadGltf(files) {
+        if (files && files.length > 0) {
+            let gltfFile,
+                fileMap = {};
+            // e.dataTransfer.files是一个filelist不是数组，必须手动遍历。
+            for(let i = 0, l = files.length; i < l; i++) {
+                let file = files[i];
+                fileMap[file.name] = file;
+
+                if (file.name.match(/\.(gltf|glb)$/)) {
+                    gltfFile = file;
+                }
+            }
+
+            if (!gltfFile) {
+                alert('请上传.gltf或.glb文件！');
+                return;
+            }
+            
+            let blobURLs = [];
+            // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
+            this.fileLoader = new FileLoader();
+            this.fileLoader.setURLModifier(function (url) {
+                if (url in fileMap) {
+                    let blobUrl = URL.createObjectURL(fileMap[url]);
+                    blobURLs.push(blobUrl);
+                    return blobUrl;
+                }
+                return url;
+            });
+            // this.fileLoader.setBaseUrl(path.dirname(gltfURL));
+
+            let p = this.fileLoader.load(gltfFile.name);
+
+            blobURLs.forEach(function (url) {
+                URL.revokeObjectURL(url);
+            });
+
+            return p;
         }
     }
 
