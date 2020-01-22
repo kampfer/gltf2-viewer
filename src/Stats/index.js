@@ -210,7 +210,6 @@ export default class Stats extends React.Component {
     }
 
     render() {
-        console.log('stats render');
         let style = {
             position: 'fixed',
             left: 5,
