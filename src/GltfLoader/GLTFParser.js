@@ -2,12 +2,15 @@ import Scene from '@webglRenderEngine/Scene';
 import Mesh from '@webglRenderEngine/Mesh';
 import Geometry from '@webglRenderEngine/geometries/Geometry';
 import Material from '@webglRenderEngine/materials/Material';
-import path from 'path';
 import BufferAttribute from '@webglRenderEngine/renderers/WebGLAttribute';
 import GraphObject from '@webglRenderEngine/GraphObject';
 import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import OrthographicCamera from '@webglRenderEngine/cameras/OrthographicCamera';
 import Mat4 from '@webglRenderEngine/math/Mat4';
+import AnimationClip from '@webglRenderEngine/animation/AnimationClip';
+import NumberKeyFrameTrack from '@webglRenderEngine/animation/tracks/NumberKeyFrameTrack';
+import VectorKeyFrameTrack from '@webglRenderEngine/animation/tracks/VectorKeyFrameTrack';
+import QuaternionKeyFrameTrack from '@webglRenderEngine/animation/tracks/QuaternionKeyFrameTrack';
 
 const attributeNameMap = {
     'POSITION': 'position',
@@ -39,38 +42,159 @@ const accessorTypeToNumComponentsMap = {
     'MAT4': 16
 };
 
+const pathToTrackMap = {
+    translation: VectorKeyFrameTrack,
+    rotation: QuaternionKeyFrameTrack,
+    scale: VectorKeyFrameTrack,
+    weights: NumberKeyFrameTrack,
+};
+
 export default class GLTFParser {
 
     constructor(opts) {
         this._loader = opts.loader;
-        this._bufferCache = new WeakMap();
-        this._bufferViewCache = [];
+        this._cache = null;
+    }
+
+    reset(data) {
+        this._cache = {};
+        this._data = data;
+    }
+
+    _parse(type, index) {
+        let cacheKey = type + ':' + index,
+            parsePromise = this._cache[cacheKey];
+
+        if (!parsePromise) {
+            switch(type) {
+                case 'scene':
+                    parsePromise = this.parseScene(index);
+                    break;
+                case 'node':
+                    parsePromise = this.parseNode(index);
+                    break;
+                case 'mesh':
+                    parsePromise = this.parseMesh(index);
+                    break;
+                case 'material':
+                    parsePromise = this.parseMaterial(index);
+                    break;
+                case 'accessor':
+                    parsePromise = this.parseAccessor(index);
+                    break;
+                case 'bufferView':
+                    parsePromise = this.parseBufferView(index);
+                    break;
+                case 'buffer':
+                    parsePromise = this.parseBuffer(index);
+                    break;
+                case 'camera':
+                    parsePromise = this.parseCamera(index);
+                    break;
+                case 'animation':
+                    parsePromise = this.parseAnimation(index);
+                    break;
+                default:
+                    console.warn('GLTFParser：不支持的属性类型：' + type);
+            }
+
+            this._cache[cacheKey] = parsePromise;
+        }
+
+        return parsePromise;
     }
 
     parse(data) {
         console.log('data:', data);
-        let sceneDefs = data.scenes;
-        return Promise.all(
-                sceneDefs.map((scenedef, index) => {
-                    return this.parseScene(data, index);
-                })
-            ).then(function (scenes) {
-                return {
-                    asset: data.asset,
-                    scenes,
-                    scene: data.scene,
-                    cameras: []
-                }
-            })
+
+        // 重置所有属性（主要是缓存，以及gltf数据）
+        this.reset(data);
+
+        return Promise.all([
+            this.parseScenes(),
+            this.parseAnimations()
+        ]).then(function ([scenes, animations]) {
+            return {
+                asset: data.asset,
+                scenes,
+                scene: data.scene,
+                cammera: [],
+                animations
+            };
+        });
     }
 
-    parseScene(data, sceneIndex) {
-        let sceneDef = data.scenes[sceneIndex],
+    parseScenes() {
+        let data = this._data;
+        return Promise.all(
+            data.scenes.map((sceneDef, index) => this._parse('scene', index))
+        );
+    }
+
+    parseAnimations() {
+        let data = this._data,
+            animations = data.animations || [];
+        return Promise.all(
+            animations.map((animation, index) => this._parse('animation', index))
+        );
+    }
+
+    parseAnimation(index) {
+        let data = this._data,
+            animDef = data.animations[index],
+            channels = animDef.channels,
+            samplers = animDef.samplers,
+            pendingNodes = [],
+            pendingInputAccessors = [],
+            pendingOutputAccessors = [],
+            pendingSamplers = [],
+            pendingTargets = [];
+
+        for(let i = 0, l = channels.length; i < l; i++) {
+            let channel = channels[i],
+                sampler = samplers[channel.sampler],
+                target = channel.target,
+                node = target.node,
+                input = sampler.input,
+                output = sampler.output;
+            pendingNodes.push(this._parse('node', node));
+            pendingInputAccessors.push(this._parse('accessor', input));
+            pendingOutputAccessors.push(this._parse('accessor', output));
+            pendingSamplers.push(sampler);
+            pendingTargets.push(target);
+        }
+
+        return Promise.all([
+            Promise.all(pendingNodes),
+            Promise.all(pendingInputAccessors),
+            Promise.all(pendingOutputAccessors),
+            Promise.all(pendingSamplers),
+            Promise.all(pendingTargets)
+        ]).then(function ([nodes, inputAccessors, outputAccessors, samplers, targets]) {
+            let tracks = [];
+
+            for(let i = 0, l = nodes.length; i < l; i++) {
+                let node = nodes[i],
+                    inputAccessor = inputAccessors[i],
+                    outputAccessor = outputAccessors[i],
+                    sampler = samplers[i],
+                    target = targets[i],
+                    TrackConstructor = pathToTrackMap[target.path];
+
+                console.log(node, inputAccessor, outputAccessor, sampler, target, TrackConstructor);
+                // tracks.push(new TrackConstructor());
+            }
+
+            // return new AnimationClip(name, duration, tracks);
+        });
+    }
+
+    parseScene(sceneIndex) {
+        let data = this._data,
+            sceneDef = data.scenes[sceneIndex],
             nodeDefs = sceneDef.nodes;
         return Promise.all(
-            nodeDefs.map((nodeIndex) => {
-                return this.parseNode(data, nodeIndex);
-            })
+            nodeDefs.map(nodeIndex => this._parse('node', nodeIndex))
         ).then((nodes) => {
             let scene = new Scene();
             nodes.forEach((node) => {
@@ -80,16 +204,17 @@ export default class GLTFParser {
         });
     }
 
-    parseNode(data, nodeIndex) {
-        let nodeDef = data.nodes[nodeIndex],
+    parseNode(nodeIndex) {
+        let data = this._data,
+            nodeDef = data.nodes[nodeIndex],
             parsePromises = [];
 
         if (nodeDef.mesh !== undefined) {
-            parsePromises.push(this.parseMesh(data, nodeDef.mesh));
+            parsePromises.push(this._parse('mesh', nodeDef.mesh));
         }
 
         if (nodeDef.camera !== undefined) {
-            parsePromises.push(this.parseCamera(data, nodeDef.camera));
+            parsePromises.push(this._parse('camera', nodeDef.camera));
         }
 
         return Promise.all(parsePromises)
@@ -130,9 +255,7 @@ export default class GLTFParser {
             .then((object) => {
                 if(nodeDef.children !== undefined) {
                     return Promise.all(
-                        nodeDef.children.map((childNodeIndex) => {
-                            return this.parseNode(data, childNodeIndex);
-                        })
+                        nodeDef.children.map(childNodeIndex => this._parse('node', childNodeIndex))
                     )
                     .then((childObjects) => {
                         childObjects.forEach((childObject) => {
@@ -148,13 +271,12 @@ export default class GLTFParser {
     // 如果primitives是空数组，返回一个GraphObject实例
     // 如果primitives仅有1个元素，返回该元素
     // 如果primitives包含1个以上的元素，返回一个GraphObject实例，所有元素都是GraphObject实例的子元素
-    parseMesh(data, meshIndex) {
-        let meshDef = data.meshes[meshIndex],
+    parseMesh(meshIndex) {
+        let data = this._data,
+            meshDef = data.meshes[meshIndex],
             primitives = meshDef.primitives;
         return Promise.all(
-            primitives.map((primitive) => {
-                return this.parsePrimitive(data, primitive);
-            })
+            primitives.map(primitive => this.parsePrimitive(primitive))
         ).then((objects) => {
             let object;
             if (objects.length === 0) {
@@ -172,8 +294,9 @@ export default class GLTFParser {
         });
     }
 
-    parseCamera(data, cameraIndex) {
-        let cameraDef = data.cameras[cameraIndex];
+    parseCamera(cameraIndex) {
+        let data = this._data,
+            cameraDef = data.cameras[cameraIndex];
         if (cameraDef.type === 'perspective') {
             let {yfov, aspectRatio, zfar, znear} = cameraDef.perspective;
             return new PerspectiveCamera(yfov, aspectRatio, znear, zfar);
@@ -185,8 +308,9 @@ export default class GLTFParser {
         }
     }
 
-    parsePrimitive(data, primitive) {
-        let attributes = primitive.attributes,
+    parsePrimitive(primitive) {
+        let data = this._data,
+            attributes = primitive.attributes,
             parsePromises = [],
             geometry = new Geometry();
 
@@ -194,7 +318,7 @@ export default class GLTFParser {
             let attributeName = attributeNameMap[gltfAttributeName],    // 将gltf定义的attribute name映射到render engine定义的name
                 accessorIndex = attributes[gltfAttributeName];
             parsePromises.push(
-                this.parseAccessor(data, accessorIndex)
+                this._parse('accessor', accessorIndex)
                     .then(function (bufferAttribute) {
                         geometry.setAttribute(attributeName, bufferAttribute);
                     })
@@ -203,7 +327,7 @@ export default class GLTFParser {
 
         if (primitive.indices !== undefined) {
             parsePromises.push(
-                this.parseAccessor(data, primitive.indices)
+                this._parse('accessor', primitive.indices)
                     .then(function (bufferAttribute) {
                         geometry.setIndex(bufferAttribute);
                     })
@@ -211,9 +335,7 @@ export default class GLTFParser {
         }
 
         return Promise.all(parsePromises)
-            .then(() => {
-                return this.parseMaterial(data, primitive.material);
-            })
+            .then(() => this._parse('material', primitive.material))
             .then(function (material) {
                 let mesh = new Mesh(geometry, material);
                 mesh.drawMode = primitive.mode === undefined ? 4 : primitive.mode;
@@ -221,8 +343,9 @@ export default class GLTFParser {
             });
     }
 
-    parseMaterial(data, MaterialIndex) {
-        let material = new Material();
+    parseMaterial(MaterialIndex) {
+        let data = this._data,
+            material = new Material();
 
         if (data.materials && data.materials[MaterialIndex]) {
             let materialDef = data.materials[MaterialIndex];
@@ -236,8 +359,9 @@ export default class GLTFParser {
         return material;
     }
 
-    parseAccessor(data, accessorIndex) {
-        let accessorDef = data.accessors[accessorIndex],
+    parseAccessor(accessorIndex) {
+        let data = this._data,
+            accessorDef = data.accessors[accessorIndex],
             parsePromises = [];
 
         if (accessorDef.bufferView === undefined && accessorDef.sparse === undefined) {
@@ -245,14 +369,14 @@ export default class GLTFParser {
         }
 
         if (accessorDef.bufferView !== undefined) {
-            parsePromises.push(this.parseBufferView(data, accessorDef.bufferView));
+            parsePromises.push(this._parse('bufferView', accessorDef.bufferView));
         } else {
             parsePromises.push(null);
         }
 
         if (accessorDef.sparse !== undefined) {
-            parsePromises.push(this.parseBufferView(data, accessorDef.sparse.indices.bufferView));
-            parsePromises.push(this.parseBufferView(data, accessorDef.sparse.values.bufferView));
+            parsePromises.push(this._parse('bufferView', accessorDef.sparse.indices.bufferView));
+            parsePromises.push(this._parse('bufferView', accessorDef.sparse.values.bufferView));
         }
 
         return Promise.all(parsePromises)
@@ -305,32 +429,24 @@ export default class GLTFParser {
             });
     }
 
-    parseBufferView(data, bufferViewIndex) {
-        let parsePromise = this._bufferViewCache[bufferViewIndex];
-        if (!parsePromise) {
-            let bufferViewDef = data.bufferViews[bufferViewIndex];
-            this._bufferViewCache[bufferViewIndex] = parsePromise = 
-                this.parseBuffer(data, bufferViewDef.buffer)
-                    .then(function (buffer) {
-                        let byteLength = bufferViewDef.byteLength || 0,
-                            byteOffset = bufferViewDef.byteOffset || 0,
-                            start = byteOffset,
-                            end = byteOffset + byteLength;
-                        return buffer.slice(start, end);
-                    });
-        }
-        return parsePromise;
+    parseBufferView(bufferViewIndex) {
+        let data = this._data,
+            bufferViewDef = data.bufferViews[bufferViewIndex];
+        return this._parse('buffer', bufferViewDef.buffer)
+            .then(function (buffer) {
+                let byteLength = bufferViewDef.byteLength || 0,
+                    byteOffset = bufferViewDef.byteOffset || 0,
+                    start = byteOffset,
+                    end = byteOffset + byteLength;
+                return buffer.slice(start, end);
+            });
     }
 
-    parseBuffer(data, bufferIndex) {
-        let bufferDef = data.buffers[bufferIndex],
+    parseBuffer(bufferIndex) {
+        let data = this._data,
+            bufferDef = data.buffers[bufferIndex],
             dataURLReg = /^data:(.*?)(;base64)?,(.*)/,
             execRet = dataURLReg.exec(bufferDef.uri);
-
-        let buffer = this._bufferCache.get(bufferDef);
-        if (buffer) {
-            return Promise.resolve(buffer);
-        }
 
         if (execRet) {
             let content = execRet[3],
@@ -347,18 +463,9 @@ export default class GLTFParser {
                 bufferView[i] = content.charCodeAt(i);
             }
 
-            this._bufferCache.set(bufferDef, bufferView.buffer);
-
             return Promise.resolve(bufferView.buffer);
         } else {
-            return this._loader.request(bufferDef.uri)
-                .then((res) => {
-                    let buffer = this._bufferCache.get(bufferDef);
-                    if (!buffer) {
-                         this._bufferCache.set(bufferDef, res);
-                    }
-                    return res;
-                });
+            return this._loader.request(bufferDef.uri);
         }
     }
 
