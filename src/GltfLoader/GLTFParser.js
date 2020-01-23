@@ -110,10 +110,12 @@ export default class GLTFParser {
         // 重置所有属性（主要是缓存，以及gltf数据）
         this.reset(data);
 
+        let self = this;
         return Promise.all([
             this.parseScenes(),
             this.parseAnimations()
         ]).then(function ([scenes, animations]) {
+            console.log(self._cache);
             return {
                 asset: data.asset,
                 scenes,
@@ -219,19 +221,13 @@ export default class GLTFParser {
 
         return Promise.all(parsePromises)
             .then((objects) => {
-                let object;
-
-                if (objects.length === 0) {
-                    object = new GraphObject();
-                } else if(objects.length === 1) {
-                    object = objects[0];
-                } else {
-                    // object = new Group();
-                    object = new GraphObject();
-                    objects.forEach((childObject) => {
-                        object.add(childObject);
-                    });
-                }
+                // node可以使用相同的mesh，但是transform（matrix、translation等等）可能不一样，所以不能直接将mesh当作node
+                // 这里需要新建新的节点，mesh作为新节点的子节点
+                let object = new GraphObject();
+                
+                objects.forEach((childObject) => {
+                    object.add(childObject);
+                });
 
                 if (nodeDef.matrix) {
                     let matrix = new Mat4(nodeDef.matrix);
