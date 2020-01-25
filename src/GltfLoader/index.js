@@ -2,6 +2,7 @@ import React from 'react';
 import FileLoader from './FileLoader';
 
 import './index.less';
+import GLTFParser from './GLTFParser';
 
 export default class FileReader extends React.Component {
 
@@ -92,11 +93,13 @@ export default class FileReader extends React.Component {
                 alert('请上传.gltf或.glb文件！');
                 return;
             }
-            
-            let blobURLs = [];
+
             // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
-            this.fileLoader = new FileLoader();
-            this.fileLoader.setURLModifier(function (url) {
+            let fileLoader = new FileLoader(),
+                gltfParser = new GLTFParser({ loader: fileLoader});
+
+            let blobURLs = [];
+            fileLoader.setURLModifier(function (url) {
                 if (url in fileMap) {
                     let blobUrl = URL.createObjectURL(fileMap[url]);
                     blobURLs.push(blobUrl);
@@ -104,9 +107,11 @@ export default class FileReader extends React.Component {
                 }
                 return url;
             });
-            // this.fileLoader.setBaseUrl(path.dirname(gltfURL));
 
-            let p = this.fileLoader.load(gltfFile.name);
+            let p = fileLoader.load(gltfFile.name)
+                .then(function (json) {
+                    return gltfParser.parse(json);
+                });
 
             blobURLs.forEach(function (url) {
                 URL.revokeObjectURL(url);
