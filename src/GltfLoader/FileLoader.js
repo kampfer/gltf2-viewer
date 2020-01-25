@@ -1,12 +1,8 @@
-import GLTFParser from './GLTFParser';
 import path from 'path';
 
 export default class GLTFLoader {
 
     constructor() {
-        this._parser = new GLTFParser({
-            loader: this
-        });
         this._requstingPool = {};
     }
 
@@ -18,7 +14,7 @@ export default class GLTFLoader {
         this._urlModifier = modifier;
     }
 
-    request(url) {
+    load(url) {
         if (url in this._requstingPool) {
             return this._requstingPool[url];
         }
@@ -44,12 +40,6 @@ export default class GLTFLoader {
         this._requstingPool[url] = p;
 
         return p;
-    }
-
-    load(url) {
-        return this.request(url).then((json) => {
-            return this._parser.parse(json);
-        });
     }
 
 }

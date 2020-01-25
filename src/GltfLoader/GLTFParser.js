@@ -465,7 +465,7 @@ export default class GLTFParser {
 
             return Promise.resolve(bufferView.buffer);
         } else {
-            return this._loader.request(bufferDef.uri);
+            return this._loader.load(bufferDef.uri);
         }
     }
 
