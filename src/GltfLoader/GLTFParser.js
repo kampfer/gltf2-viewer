@@ -49,6 +49,13 @@ const pathToTrackMap = {
     weights: NumberKeyFrameTrack,
 };
 
+const pathToPropertyMap = {
+    translation: 'position',
+    rotation: 'quaternion',
+    scale: 'scale',
+    weights: 'morphTargetInfluences'
+};
+
 export default class GLTFParser {
 
     constructor(opts) {
@@ -181,11 +188,37 @@ export default class GLTFParser {
                     target = targets[i],
                     TrackConstructor = pathToTrackMap[target.path];
 
-                console.log(node, inputAccessor, outputAccessor, sampler, target, TrackConstructor);
-                // tracks.push(new TrackConstructor());
+                if (outputAccessor.normalized) {
+                    let outputArray = outputAccessor.array,
+                        scale;
+                    if (outputArray.constructor === Int8Array) {
+                        scale = 1 / 127;
+                    } else if (outputArray.constructor === Uint8Array) {
+                        scale = 1 / 255;
+                    } else if (outputArray.constructor === Int16Array) {
+                        scale = 1 / 32767;
+                    } else if (outputArray.constructor === Uint16Array) {
+                        scale = 1 / 65535;
+                    } else {
+                        console.warn('不支持的output类型');
+                    }
+
+                    let scaledArray = new Float32Array(outputArray.length);
+
+                    for(let i = 0, l = outputArray.length; i < l; i++) {
+                        scaledArray[i] = outputArray[i] * scale;
+                    }
+
+                    outputArray = scaledArray;
+                }
+
+                let trackName = node.name + '.' + pathToPropertyMap[sampler.path],
+                    tack = new TrackConstructor(trackName, inputAccessor.array, outputAccessor.array, sampler.interpolation);
+                tracks.push(tack);
             }
 
-            // return new AnimationClip(name, duration, tracks);
+            let animName = animDef.name !== undefined ? animDef.name : 'animation_' + index;
+            return new AnimationClip(animName, undefined, tracks);
         });
     }
 
