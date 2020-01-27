@@ -200,7 +200,7 @@ export default class GLTFParser {
                     } else if (outputArray.constructor === Uint16Array) {
                         scale = 1 / 65535;
                     } else {
-                        console.warn('不支持的output类型');
+                        console.warn('GLTFParser：不支持的typearray类型');
                     }
 
                     let scaledArray = new Float32Array(outputArray.length);
