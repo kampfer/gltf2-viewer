@@ -3,6 +3,8 @@ import WebGLRenderer from '@webglRenderEngine/renderers/WebGLRenderer';
 import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraController';
 import Box3 from '@webglRenderEngine/math/Box3';
+import AnimationMixer from '@webglRenderEngine/animation/AnimationMixer';
+import Clock from '@webglRenderEngine/Clock';
 
 import './index.less';
 
@@ -86,8 +88,16 @@ export default class GltfRenderer extends React.Component {
         this.cameraController = new OrbitCameraController(camera, renderer.domElement);
         this.cameraController.target = center;
 
+        if (this.mixer) {
+            this.mixer.destroy();
+        }
+        this.mixer = new AnimationMixer();
+
+        let clock = new Clock();
+
         function animate() {
             if (self.props.beforeRender) self.props.beforeRender();
+            self.mixer.update(clock.getDeltaTime());
             renderer.render(scene, camera);
             if (self.props.afterRender) self.props.afterRender();
             self._animationTimer = requestAnimationFrame(animate);
