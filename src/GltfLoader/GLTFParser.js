@@ -11,6 +11,11 @@ import AnimationClip from '@webglRenderEngine/animation/AnimationClip';
 import NumberKeyFrameTrack from '@webglRenderEngine/animation/tracks/NumberKeyFrameTrack';
 import VectorKeyFrameTrack from '@webglRenderEngine/animation/tracks/VectorKeyFrameTrack';
 import QuaternionKeyFrameTrack from '@webglRenderEngine/animation/tracks/QuaternionKeyFrameTrack';
+import {
+    LinearInterpolation,
+    StepInterpolation,
+    CubicSplineInterpolation
+} from '@webglRenderEngine/constants';
 
 const attributeNameMap = {
     'POSITION': 'position',
@@ -54,6 +59,12 @@ const pathToPropertyMap = {
     rotation: 'quaternion',
     scale: 'scale',
     weights: 'morphTargetInfluences'
+};
+
+const interpolationMap = {
+    LINEAR: LinearInterpolation,
+    STEP: StepInterpolation,
+    CUBICSPLINE: CubicSplineInterpolation
 };
 
 export default class GLTFParser {
@@ -212,9 +223,16 @@ export default class GLTFParser {
                     outputArray = scaledArray;
                 }
 
-                let trackName = node.name + '.' + pathToPropertyMap[sampler.path],
-                    tack = new TrackConstructor(trackName, inputAccessor.array, outputAccessor.array, sampler.interpolation);
-                tracks.push(tack);
+                // let trackName = node.name + '.' + pathToPropertyMap[sampler.path],
+                //     track = new TrackConstructor(trackName, inputAccessor.array, outputAccessor.array, sampler.interpolation);
+                let track = new TrackConstructor(
+                    node,
+                    pathToPropertyMap[sampler.path],
+                    inputAccessor.array,
+                    outputAccessor.array,
+                    interpolationMap[sampler.interpolation]
+                );
+                tracks.push(track);
             }
 
             let animName = animDef.name !== undefined ? animDef.name : 'animation_' + index;
