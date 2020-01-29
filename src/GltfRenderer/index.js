@@ -91,7 +91,7 @@ export default class GltfRenderer extends React.Component {
         if (this.mixer) {
             this.mixer.destroy();
         }
-        this.mixer = new AnimationMixer();
+        this.mixer = new AnimationMixer(gltf.animations);
 
         let clock = new Clock();
 
