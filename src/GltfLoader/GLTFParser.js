@@ -227,7 +227,7 @@ export default class GLTFParser {
                 //     track = new TrackConstructor(trackName, inputAccessor.array, outputAccessor.array, sampler.interpolation);
                 let track = new TrackConstructor(
                     node,
-                    pathToPropertyMap[sampler.path],
+                    pathToPropertyMap[target.path],
                     inputAccessor.array,
                     outputAccessor.array,
                     interpolationMap[sampler.interpolation]
