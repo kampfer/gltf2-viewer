@@ -4,6 +4,9 @@ import FileLoader from './FileLoader';
 import './index.less';
 import GLTFParser from './GLTFParser';
 
+// [火狐浏览器drop文件时会新建tab]http://mozilla.com.cn/thread-370812-1-1.html
+// 解决办法：禁用拓展：“附加组件管理器”
+
 export default class FileReader extends React.Component {
 
     constructor(props) {
@@ -52,7 +55,7 @@ export default class FileReader extends React.Component {
         this.stopEvent(e);
         this.setState({ active: true });
     }
-    
+
     // If you start off hovering directly over dropArea and then hover over one of its children,
     // then dragleave will be fired and the highlight will be removed.
     // 使用e.currentTarget可以保证处理的dom一定是form，但是渲染速度尽快依然会出去闪烁的现象
