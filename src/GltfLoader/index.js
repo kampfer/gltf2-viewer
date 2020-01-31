@@ -27,12 +27,7 @@ export default class FileReader extends React.Component {
                     method="post"
                     action=""
                     encType="multipart/form-data"
-                    onDrag={this.stopEvent}
-                    onDragStart={this.stopEvent}
                     onDragOver={this.handleDragStart}
-                    onDragEnter={this.handleDragStart}
-                    onDragLeave={this.handleDragStop}
-                    onDragEnd={this.handleDragStop}
                     onDrop={this.handleDrop}
                 >
                     <div className="box__input">

@@ -45,16 +45,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <div
-                className="app"
-                onDrag={this.stopDefault}
-                onDragOver={this.stopDefault}
-                onDragStart={this.showFileReader}
-                onDragEnd={this.stopDefault}
-                onDragEnter={this.showFileReader}
-                onDragLeave={this.stopDefault}
-                onDrop={this.stopDefault}
-            >
+            <div className="app">
                 <Stats ref={this.stats}/>
                 <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                 <GltfRenderer
