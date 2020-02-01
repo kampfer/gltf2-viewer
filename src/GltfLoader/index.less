@@ -1,60 +1,37 @@
 .file-uploader {
+
     width: 100%;
     height: 100%;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
+    position: relative;
 
-    .box {
-        width: 680px;
-        font-size: 1.25rem;
-        background-color: #c8dadf;
-        padding: 100px 20px;
+    .file-uploader__tip {
 
-        outline: 2px dashed #92b0b3;
-        outline-offset: -10px;
-        transition: outline-offset .15s ease-in-out, background-color .15s linear;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-70px);
 
-        .box__icon {
+        .file-uploader__icon {
             width: 100%;
             height: 80px;
-            fill: #92b0b3;
-            display: block;
+            fill: #ccc;
             margin-bottom: 40px;
         }
-
-        .box__file {
-            width: 0.1px;
-            height: 0.1px;
-            opacity: 0;
-            overflow: hidden;
-            position: absolute;
-            z-index: -1;
-        }
-
+    
         label {
             cursor: pointer;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
+            line-height: 20px;
+            height: 20px;
+            display: inline-block;
         }
-
+    
         label:hover strong {
             color: #39bfd3;
         }
 
-        .box__button {
-            display: none;
-        }
     }
 
-    .box.is-dragover {
-        outline-offset: -20px;
-        outline-color: #c8dadf;
-        background-color: #fff;
-    }
 }
 
 .file-uploader.hide {
