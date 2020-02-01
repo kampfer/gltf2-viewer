@@ -18,8 +18,11 @@ export default class App extends React.Component {
 
         this.showFileReader = this.showFileReader.bind(this);
         this.showGltfRenderer = this.showGltfRenderer.bind(this);
+        this.handleDragStart = this.handleDragStart.bind(this);
+        this.handleDrop = this.handleDrop.bind(this);
 
         this.stats = React.createRef();
+        this.gltfLoader = React.createRef();
     }
 
     showFileReader(e) {
@@ -43,13 +46,21 @@ export default class App extends React.Component {
         e.stopPropagation();
     }
 
+    handleDragStart(e) {
+        this.gltfLoader.current.handleDragStart(e);
+    }
+
+    handleDrop(e) {
+        this.gltfLoader.current.handleDrop(e);
+    }
+
     render() {
         return (
             <div className="container">
                 <div className="side"></div>
-                <div className="main">
+                <div className="main" onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
                     <Stats ref={this.stats} right={5} top={5}/>
-                    <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
+                    <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                     <GltfRenderer
                         gltf={this.state.gltf}
                         hide={this.state.hideGltfRenderer}
