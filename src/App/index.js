@@ -1,9 +1,9 @@
 import React from 'react';
-import GltfLoader from './GltfLoader';
-import GltfRenderer from './GltfRenderer';
-import Stats from './Stats';
+import GltfLoader from '../GltfLoader';
+import GltfRenderer from '../GltfRenderer';
+import Stats from '../Stats';
 
-import './main.less';
+import './index.less';
 
 export default class App extends React.Component {
 
@@ -45,15 +45,18 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <div className="app">
-                <Stats ref={this.stats} right={5} top={5}/>
-                <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
-                <GltfRenderer
-                    gltf={this.state.gltf}
-                    hide={this.state.hideGltfRenderer}
-                    beforeRender={() => this.stats.current.begin()}
-                    afterRender={() => this.stats.current.end()}
-                />
+            <div className="container">
+                <div className="side"></div>
+                <div className="main">
+                    <Stats ref={this.stats} right={5} top={5}/>
+                    <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
+                    <GltfRenderer
+                        gltf={this.state.gltf}
+                        hide={this.state.hideGltfRenderer}
+                        beforeRender={() => this.stats.current.begin()}
+                        afterRender={() => this.stats.current.end()}
+                    />
+                </div>
             </div>
         );
     }

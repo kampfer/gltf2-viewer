@@ -21,9 +21,14 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentDidMount() {
-        this.webglRenderer = new WebGLRenderer({canvas: this.webglCanvas.current});
-        this.webglRenderer.setSize(window.innerWidth, window.innerHeight);
-        this.webglRenderer.setClearColor([1, 1, 1, 1]);
+        let canvas = this.webglCanvas.current;
+        this.webglRenderer = new WebGLRenderer({ canvas });
+
+        let width = canvas.parentNode.offsetWidth,
+            height = canvas.parentNode.offsetHeight;
+        this.webglRenderer.setSize(width, height);
+
+        this.webglRenderer.setClearColor([30 / 255, 30 / 255, 30 / 255, 1]);
     }
 
     componentWillUnmount() {
