@@ -210,10 +210,13 @@ export default class Stats extends React.Component {
     }
 
     render() {
+        let props = this.props;
         let style = {
             position: 'fixed',
-            left: 5,
-            top: 5,
+            left: props.left,
+            top: props.top,
+            right: props.right,
+            bottom: props.bottom,
             zIndex: 999
         };
         return (

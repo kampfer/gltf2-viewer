@@ -46,7 +46,7 @@ export default class App extends React.Component {
     render() {
         return (
             <div className="app">
-                <Stats ref={this.stats}/>
+                <Stats ref={this.stats} right={5} top={5}/>
                 <GltfLoader onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                 <GltfRenderer
                     gltf={this.state.gltf}
