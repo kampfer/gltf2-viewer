@@ -29,6 +29,16 @@ export default class GltfNodeViewer extends React.Component {
         this.setState({ nodes });
     }
 
+    getNodeName(node) {
+        let name = node.name;
+
+        if (!name) {
+            name = node.constructor.name + '.' + node.uid;
+        }
+
+        return name;
+    }
+
     generateNode(nodes) {
         return (
             <ul>
@@ -42,13 +52,13 @@ export default class GltfNodeViewer extends React.Component {
                             }
                             return (
                                 <li key={uid} className={className} onClick={this.handleClick} data-uid={uid}>
-                                    <p className="item-content">> {node.name || node.type}</p>
+                                    <p className="item-content">{this.getNodeName(node)}</p>
                                     {this.generateNode(node.children)}
                                 </li>
                             );
                         } else {
                             return (
-                                <li key={node.uid}>{node.name || node.type}</li>
+                                <li key={node.uid}><p className="item-content">{this.getNodeName(node)}</p></li>
                             );
                         }
                     })
