@@ -77,11 +77,18 @@ export default class GltfRenderer extends React.Component {
             length = size.length(),
             camera = null,
             index = 0;
-        if (cameras.length > 0 && cameras[index]) {
-            camera = cameras[index];
+        if (cameras.length > 0) {
+            let theirCamera = cameras[index];
+            if (theirCamera.tyep === 'PerspectiveCamera') {
+                camera = new PerspectiveCamera(theirCamera.fovy, theirCamera.aspect, theirCamera.near, theirCamera.far);
+            } else if (theirCamera.type === 'OrthographicCamera') {
+                //
+            }
         } else {
-            camera = new PerspectiveCamera(90 * (Math.PI / 180), window.innerWidth / window.innerHeight, 0.1, length * 100);
-            scene.add(camera);
+            let canvas = this.webglCanvas.current,
+                width = canvas.parentNode.offsetWidth,
+                height = canvas.parentNode.offsetHeight;
+            camera = new PerspectiveCamera(90 * (Math.PI / 180), width / height, 0.1, length * 100);
         }
         camera.position.copy(center);
         camera.position.z += length;
@@ -103,6 +110,7 @@ export default class GltfRenderer extends React.Component {
         function animate() {
             if (self.props.beforeRender) self.props.beforeRender();
             self.mixer.update(clock.getDeltaTime());
+            camera.updateWorldMatrix();
             renderer.render(scene, camera);
             if (self.props.afterRender) self.props.afterRender();
             self._animationTimer = requestAnimationFrame(animate);
