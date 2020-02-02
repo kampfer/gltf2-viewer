@@ -1,5 +1,9 @@
 .gltf-node-viewer {
 
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
     .title {
 
         font-size: 11px;
@@ -8,6 +12,37 @@
         color: #bbbbbb;
         padding: 0 8px;
         background-color: rgba(128, 128, 128, 0.2);
+
+    }
+
+    .content {
+
+        overflow-x: hidden;
+        overflow-y: auto;
+        flex: 1;
+        font-size: 13px;
+
+        ul {
+            padding-left: 8px;
+        }
+
+        li {
+            padding-left: 4px;
+        }
+
+        .item-content:hover {
+            background-color: #2a2d2e;
+            cursor: pointer;
+        }
+
+        .item-content {
+            height: 22px;
+            line-height: 22px;
+        }
+
+        li.collapsed > ul {
+            display: none;
+        }
 
     }
 
