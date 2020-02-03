@@ -54,7 +54,7 @@ class Node extends React.Component {
                 <div className={expanded ? 'node-children' : 'node-children hide'}>
                     {
                         node.children.map(
-                            child => <Node node={child} level={level + 1} key={node.uid}></Node>
+                            child => <Node node={child} level={level + 1} key={child.uid}></Node>
                         )
                     }
                 </div>
@@ -64,7 +64,7 @@ class Node extends React.Component {
         }
 
         for(let i = 0; i < level; i++) {
-            indentGuides.push(<div className="indent-guide"></div>);
+            indentGuides.push(<div className="indent-guide" key={i}></div>);
         }
 
         return (
