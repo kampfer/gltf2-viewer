@@ -2,6 +2,86 @@ import './index.less';
 
 import React from 'react';
 
+class Node extends React.Component {
+
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            expandable: props.node.children.length > 0,
+            expanded: false
+        };
+
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    getNodeName(node) {
+        let name = node.name;
+
+        if (!name) {
+            name = node.constructor.name + '.' + node.uid;
+        }
+
+        return name;
+    }
+
+    handleClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let expanded = !this.state.expanded;
+        this.setState({ expanded });
+    }
+
+    render() {
+        let props = this.props,
+            node = props.node,
+            level = props.level,
+            name = this.getNodeName(node),
+            className = 'node',
+            expanded = this.state.expanded,
+            indentGuides = [],
+            children;
+
+        if (expanded) {
+            className += ' collapsed';
+        }
+
+        if (node.children.length > 0) {
+            className += ' expandable';
+
+            children = (
+                <div className={expanded ? 'node-children' : 'node-children hide'}>
+                    {
+                        node.children.map(
+                            child => <Node node={child} level={level + 1} key={node.uid}></Node>
+                        )
+                    }
+                </div>
+            );
+        } else {
+            className += ' default';
+        }
+
+        for(let i = 0; i < level; i++) {
+            indentGuides.push(<div className="indent-guide"></div>);
+        }
+
+        return (
+            <div className={className}>
+                <div className="node-label" onClick={this.handleClick}>
+                    <div className="indent">
+                        { indentGuides }
+                    </div>
+                    <div className="node-name">{name}</div>
+                </div>
+                { children }
+            </div>
+        );
+    }
+
+}
+
 export default class GltfNodeViewer extends React.Component {
 
     constructor(props) {
@@ -10,8 +90,6 @@ export default class GltfNodeViewer extends React.Component {
         this.state = {
             nodes: {}
         };
-
-        this.handleClick = this.handleClick.bind(this);
     }
 
     updateNodeState(gltf) {
@@ -29,108 +107,18 @@ export default class GltfNodeViewer extends React.Component {
         this.setState({ nodes });
     }
 
-    getNodeName(node) {
-        let name = node.name;
-
-        if (!name) {
-            name = node.constructor.name + '.' + node.uid;
-        }
-
-        return name;
-    }
-
-    generateNode(nodes) {
-        return (
-            <ul>
-                {
-                    nodes.map((node) => {
-                        if (node.children.length > 0) {
-                            let className = 'expandable',
-                                uid = node.uid;
-                            if (!(this.state[uid] && this.state[uid].expanded)) {
-                                className += ' collapsed';
-                            }
-                            return (
-                                <li key={uid} className={className} onClick={this.handleClick} data-uid={uid}>
-                                    <p className="item-content">{this.getNodeName(node)}</p>
-                                    {this.generateNode(node.children)}
-                                </li>
-                            );
-                        } else {
-                            return (
-                                <li key={node.uid}><p className="item-content">{this.getNodeName(node)}</p></li>
-                            );
-                        }
-                    })
-                }
-            </ul>
-        )
-    }
-
-    handleClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        let uid = e.currentTarget.dataset.uid,
-            state = this.state,
-            nodes = {};
-        nodes[uid] = { expanded: !(state[uid] && state[uid].expanded) };
-        this.setState(nodes);
-    }
-
     render() {
         let props = this.props,
-            gltf = props.gltf;
+            gltf = props.gltf,
+            nodes = gltf && gltf.scenes[gltf.scene].children;
+
         return (
             <div className="gltf-node-viewer">
                 <div className="title">Scene Collection</div>
                 <div className="content">
-                    {/* {gltf && this.generateNode(gltf.scenes[gltf.scene].children)} */}
-                    <div className="node expandable">
-                        <div className="node-label">
-                            <span className="node-name">node.1</span>
-                        </div>
-                        <div className="node-children">
-                            <div className="node expandable collapsed">
-                                <div className="node-label">
-                                    <div className="indent">
-                                        <div class="indent-guide"></div>
-                                        <div class="indent-guide"></div>
-                                    </div>
-                                    <div className="node-name">node.1-1</div>
-                                </div>
-                                <div className="node-children">
-                                    <div className="node default">
-                                        <div className="node-label">
-                                            <span className="node-name">node.1-1-1</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="node default">
-                                <div className="node-label">
-                                    <span className="node-name">node.1-2</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="node expandable">
-                        <div className="node-label">
-                            <span className="node-name">node.2</span>
-                        </div>
-                        <div className="node-children">
-                            <div className="node default">
-                                <div className="node-label">
-                                    <span className="node-name">node.2-1</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="node default">
-                        <div className="node-label">
-                            <span className="node-name">node.3</span>
-                        </div>
-                    </div>
+                    {
+                        nodes && nodes.map(node => <Node node={node} level={0} key={node.uid}></Node>)
+                    }
                 </div>
             </div>
         );
