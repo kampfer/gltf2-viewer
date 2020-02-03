@@ -31,6 +31,8 @@ class Node extends React.Component {
 
         let expanded = !this.state.expanded;
         this.setState({ expanded });
+
+        if (this.props.onClick) this.props.onClick(this.props.node.uid);
     }
 
     render() {
@@ -40,6 +42,7 @@ class Node extends React.Component {
             name = this.getNodeName(node),
             className = 'node',
             expanded = this.state.expanded,
+            selected = props.selectedNode === node.uid,
             indentGuides = [],
             children;
 
@@ -54,7 +57,14 @@ class Node extends React.Component {
                 <div className={expanded ? 'node-children' : 'node-children hide'}>
                     {
                         node.children.map(
-                            child => <Node node={child} level={level + 1} key={child.uid}></Node>
+                            child => 
+                                <Node
+                                    node={child}
+                                    level={level + 1}
+                                    key={child.uid}
+                                    onClick={props.onClick}
+                                    selectedNode={props.selectedNode}
+                                ></Node>
                         )
                     }
                 </div>
@@ -69,7 +79,7 @@ class Node extends React.Component {
 
         return (
             <div className={className}>
-                <div className="node-label" onClick={this.handleClick}>
+                <div className={"node-label" + (selected ? ' selected' : '')} onClick={this.handleClick}>
                     <div className="indent">
                         { indentGuides }
                     </div>
@@ -88,27 +98,19 @@ export default class GltfNodeViewer extends React.Component {
         super(props);
 
         this.state = {
-            nodes: {}
+            selectedNode: undefined
         };
+
+        this.handleClickNode = this.handleClickNode.bind(this);
     }
 
-    updateNodeState(gltf) {
-        let nodes = [];
-        if (gltf) {
-            let scene = gltf.scenes[gltf.scene];
-            scene.traverse(function (child) {
-                nodes.push({
-                    uid: child.uid,
-                    expandable: child.children.length > 0 ? true : false,
-                    expanded: false
-                });
-            });
-        }
-        this.setState({ nodes });
+    handleClickNode(uid) {
+        this.setState({ selectedNode: uid });
     }
 
     render() {
-        let props = this.props,
+        let state = this.state,
+            props = this.props,
             gltf = props.gltf,
             nodes = gltf && gltf.scenes[gltf.scene].children;
 
@@ -117,7 +119,16 @@ export default class GltfNodeViewer extends React.Component {
                 <div className="title">Scene Collection</div>
                 <div className="content">
                     {
-                        nodes && nodes.map(node => <Node node={node} level={0} key={node.uid}></Node>)
+                        nodes && nodes.map(
+                            node => 
+                                <Node
+                                    node={node}
+                                    level={0}
+                                    key={node.uid}
+                                    onClick={this.handleClickNode}
+                                    selectedNode={state.selectedNode}
+                                ></Node>
+                        )
                     }
                 </div>
             </div>
