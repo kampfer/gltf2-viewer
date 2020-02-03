@@ -85,7 +85,52 @@ export default class GltfNodeViewer extends React.Component {
             <div className="gltf-node-viewer">
                 <div className="title">Scene Collection</div>
                 <div className="content">
-                    {gltf && this.generateNode(gltf.scenes[gltf.scene].children)}
+                    {/* {gltf && this.generateNode(gltf.scenes[gltf.scene].children)} */}
+                    <div className="node expandable">
+                        <div className="node-label">
+                            <span className="node-name">node.1</span>
+                        </div>
+                        <div className="node-children">
+                            <div className="node expandable collapsed">
+                                <div className="node-label">
+                                    <div className="indent">
+                                        <div class="indent-guide"></div>
+                                        <div class="indent-guide"></div>
+                                    </div>
+                                    <div className="node-name">node.1-1</div>
+                                </div>
+                                <div className="node-children">
+                                    <div className="node default">
+                                        <div className="node-label">
+                                            <span className="node-name">node.1-1-1</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="node default">
+                                <div className="node-label">
+                                    <span className="node-name">node.1-2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="node expandable">
+                        <div className="node-label">
+                            <span className="node-name">node.2</span>
+                        </div>
+                        <div className="node-children">
+                            <div className="node default">
+                                <div className="node-label">
+                                    <span className="node-name">node.2-1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="node default">
+                        <div className="node-label">
+                            <span className="node-name">node.3</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
