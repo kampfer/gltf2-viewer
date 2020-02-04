@@ -2,17 +2,16 @@
   "name": "gltf2-viwer",
   "version": "1.0.0",
   "description": "a gltf2 viewer with webgl",
-  "main": "",
+  "author": "https://github.com/kampfer",
+  "license": "ISC",
   "scripts": {
     "dev": "webpack-dev-server --config scripts/webpack.dev.config.js",
     "example": "webpack-dev-server --config scripts/webpack.example.config.js",
     "build": "webpack --config scripts/webpack.pro.config.js",
     "analyse": "webpack --profile --json > stats.json",
-    "electron": "electron src/electron.js",
-    "electron-dev": "webpack --config scripts/webpack.dev.config.js --watch"
+    "electron": "",
+    "electron-dev": "node scripts/electronDev.js"
   },
-  "author": "https://github.com/kampfer",
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
