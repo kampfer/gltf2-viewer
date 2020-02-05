@@ -50,6 +50,6 @@ module.exports = {
     output: {
         filename: '[name].[hash].js',
         chunkFilename: '[id].[hash].js',
-        path: path.join(__dirname, '../output')
+        path: path.join(__dirname, '../output/web')
     }
 };
