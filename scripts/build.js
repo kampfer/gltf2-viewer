@@ -5,6 +5,8 @@ const builder = require("electron-builder");
 
 const config = require('./webpack.dev.config');
 
+// electron builder的产出目录和app目录必须分开，资源不能混在一起
+// 否则打包结果的大小会明显增大
 const Platform = builder.Platform,
     outputPath = path.join(__dirname, '../output'),
     webSourcePath = path.join(outputPath, 'web'),
