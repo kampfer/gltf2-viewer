@@ -19,7 +19,7 @@ function createWindow () {
     win.maximize();
 
     // 加载index.html文件
-    win.loadFile('../output/index.html');
+    win.loadFile('./index.html');
 
     // 打开开发者工具
     // win.webContents.openDevTools();
