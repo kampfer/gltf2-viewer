@@ -1,25 +1,9 @@
 .gltf-node-viewer {
 
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-
-    .title {
-
-        font-size: 11px;
-        height: 35px;
-        line-height: 35px;
-        color: #bbbbbb;
-        padding: 0 8px;
-        background-color: rgba(128, 128, 128, 0.2);
-
-    }
-
-    .content {
+    .body {
 
         overflow-x: hidden;
         overflow-y: auto;
-        flex: 1;
         font-size: 13px;
 
         .node-label:hover {
@@ -38,13 +22,16 @@
             padding-left: 12px;
         }
 
-        .node >.node-label > .node-name:before {
-            vertical-align: sub;
-            padding-right: 3px;
-            font-size: 16px;
+        .node > .node-label > .node-name:before {
+            vertical-align: middle;
+            margin-right: 3px;
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
+            content: ' ';
+            background-image: url(./icons.svg);
+            background-size: 602px 640px;
+            background-repeat: no-repeat;
         }
 
         .indent {
@@ -64,16 +51,16 @@
             border-color: #585858;
         }
 
-        .node.default >.node-label > .node-name:before {
-            content: url(./git-compare.svg);
+        .node.empty-object > .node-label > .node-name:before {
+            background-position: (-3px - 20px * 0) (-8px - 21px * 20);
         }
 
-        .node.expandable >.node-label > .node-name:before {
-            content: url(./chevron-right.svg);
+        .node.mesh > .node-label > .node-name:before {
+            background-position: (-3px - 20px * 0) (-8px - 21px * 20);
         }
 
-        .node.expandable.collapsed >.node-label > .node-name:before {
-            content: url(./chevron-down.svg);
+        .node.expandable.collapsed > .node-label > .node-name:before {
+            background-position: -3px -8px;
         }
 
         .node-children.hide {
