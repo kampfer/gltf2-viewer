@@ -6,10 +6,11 @@
   "license": "ISC",
   "scripts": {
     "dev": "webpack-dev-server --config scripts/webpack.dev.config.js",
+    "dev:electron": "node scripts/electronDev.js",
+    "dev:html": "webpack-dev-server --config scripts/webpack.html.config.js",
     "example": "webpack-dev-server --config scripts/webpack.example.config.js",
     "build": "node scripts/build.js",
-    "analyse": "webpack --profile --json > stats.json",
-    "electron-dev": "node scripts/electronDev.js"
+    "analyse": "webpack --profile --json > stats.json"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
