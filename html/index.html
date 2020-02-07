@@ -21,49 +21,79 @@
                             </div>
                             <div class="grid" style="flex-grow: 1;">
                                 <div class="body">
-                                    <div class="node expandable">
-                                        <div class="node-label selected">
-                                            <div class="node-name">node.1</div>
-                                        </div>
-                                        <div class="node-children">
-                                            <div class="node expandable collapsed">
-                                                <div class="node-label">
-                                                    <div class="indent">
-                                                        <div class="indent-guide"></div>
-                                                        <div class="indent-guide"></div>
-                                                    </div>
-                                                    <div class="node-name">node.1-1</div>
+                                    <div class="node-list">
+                                        <div class="node empty-object selected">
+                                            <div class="node-label">
+                                                <div class="icon expand">expand</div>
+                                                <div class="icon empty-object">empty-object</div>
+                                                <div class="node-name">node.1</div>
+                                                <div class="children-type">
+                                                    <div class="icon mesh">mesh</div>
                                                 </div>
-                                                <div class="node-children">
-                                                    <div class="node default">
-                                                        <div class="node-label">
-                                                            <div class="node-name">node.1-1-1</div>
+                                            </div>
+                                            <div class="node-children">
+                                                <div class="node empty-object">
+                                                    <div class="node-label">
+                                                        <div class="indent">
+                                                            <div class="indent-guide"></div>
+                                                        </div>
+                                                        <div class="icon collapse">collapse</div>
+                                                        <div class="icon empty-object">empty-object</div>
+                                                        <div class="node-name">node.1-1</div>
+                                                        <div class="children-type">
+                                                            <div class="icon mesh">mesh</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="node-children">
+                                                        <div class="node mesh">
+                                                            <div class="node-label">
+                                                                <div class="indent">
+                                                                    <div class="indent-guide"></div>
+                                                                    <div class="indent-guide"></div>
+                                                                </div>
+                                                                <div class="icon empty-object">empty-object</div>
+                                                                <div class="node-name">node.1-1-1</div>
+                                                                <div class="children-type">
+                                                                    <div class="icon mesh">mesh</div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="node default">
-                                                <div class="node-label">
-                                                    <div class="node-name">node.1-2</div>
+                                                <div class="node empty-object">
+                                                    <div class="node-label">
+                                                        <div class="indent">
+                                                            <div class="indent-guide"></div>
+                                                        </div>
+                                                        <div class="icon empty-object">empty-object</div>
+                                                        <div class="node-name">node.1-2</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="node expandable">
-                                        <div class="node-label">
-                                            <div class="node-name">node.2</div>
-                                        </div>
-                                        <div class="node-children">
-                                            <div class="node default">
-                                                <div class="node-label">
-                                                    <div class="node-name">node.2-1</div>
+                                        <div class="node empty-object">
+                                            <div class="node-label">
+                                                <div class="icon expand">expand</div>
+                                                <div class="icon empty-object">empty-object</div>
+                                                <div class="node-name">node.2</div>
+                                            </div>
+                                            <div class="node-children">
+                                                <div class="node empty-object">
+                                                    <div class="node-label">
+                                                        <div class="indent">
+                                                            <div class="indent-guide"></div>
+                                                        </div>
+                                                        <div class="icon empty-object">empty-object</div>
+                                                        <div class="node-name">node.2-1</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="node empty-object">
-                                        <div class="node-label">
-                                            <div class="node-name">node.3</div>
+                                        <div class="node empty-object">
+                                            <div class="node-label">
+                                                <div class="icon empty-object">empty-object</div>
+                                                <div class="node-name">node.3</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -76,12 +106,82 @@
                         <div class="grid-container vertical">
                             <div class="grid">
                                 <div class="head">
-                                    <div class="name">面板1</div>
+                                    <div class="name">物体属性</div>
                                     <div class="tools"></div>
                                 </div>
                             </div>
                             <div class="grid" style="flex-grow: 1;">
-                                <div class="body"></div>
+                                <div class="body">
+                                    <div class="input-group">
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Location X</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Y</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Z</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Rotation X</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Y</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Z</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Scale X</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Y</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                        <div class="input-wrapper">
+                                            <label class="input-name">Z</label>
+                                            <div class="slide-input">
+                                                <span class="value">0</span>
+                                                <span class="unit">m</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
