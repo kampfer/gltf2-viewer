@@ -1,66 +1,84 @@
 .gltf-node-viewer {
 
-    .body {
+    .node-list {
 
-        overflow-x: hidden;
-        overflow-y: auto;
         font-size: 13px;
 
-        .node-label:hover {
-            background-color: #2a2d2e;
-            cursor: pointer;
-        }
+        .node {
 
-        .node-label.selected {
-            background-color: #094771;
-            color: #fff;
-        }
+            .node-label {
 
-        .node-label {
-            height: 22px;
-            line-height: 22px;
-            padding-left: 12px;
-        }
+                height: 22px;
+                line-height: 22px;
+                padding-left: 12px;
 
-        .node > .node-label > .node-name:before {
-            vertical-align: middle;
-            margin-right: 3px;
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            content: ' ';
-            background-image: url(./icons.svg);
-            background-size: 602px 640px;
-            background-repeat: no-repeat;
-        }
+                & > div {
+                    float: left;
+                }
 
-        .indent {
-            height: 100%;
-            float: left;
-            transform: translateX(5px);
-        }
+                .indent {
 
-        .indent-guide {
-            width: 8px;
-            height: 100%;
-            float: left;
-            border-left: 1px solid transparent;
-        }
+                    height: 100%;
+                    transform: translateX(10px);
 
-        .indent-guide.active {
-            border-color: #585858;
-        }
+                    .indent-guide {
+                        box-sizing: border-box;
+                        width: 20px;
+                        height: 100%;
+                        float: left;
+                        border-left: 1px solid transparent;
+                    }
 
-        .node.empty-object > .node-label > .node-name:before {
-            background-position: (-3px - 20px * 0) (-8px - 21px * 20);
-        }
+                    .indent-guide.active {
+                        border-color: #585858;
+                    }
 
-        .node.mesh > .node-label > .node-name:before {
-            background-position: (-3px - 20px * 0) (-8px - 21px * 20);
-        }
+                }
 
-        .node.expandable.collapsed > .node-label > .node-name:before {
-            background-position: -3px -8px;
+                .node-name {
+                    margin-left: 5px;
+                }
+
+                .children-type {
+                    margin-left: 20px;
+                }
+
+                .icon {
+                    width: 20px;
+                    height: 20px;
+                    text-indent: -999px;
+                    background-image: url(./icons.svg);
+                    background-size: 602px 640px;
+                    background-repeat: no-repeat;
+                }
+
+                .icon.empty-object {
+                    background-position: (-3px - 21px * 0) (-8px - 21px * 20);
+                }
+
+                .icon.mesh {
+                    background-position: (-3px - 21px * 1) (-8px - 21px * 20);
+                }
+
+                .icon.expand {
+                    background-position: (-3px - 21px * 10) (-8px - 21px * 29);
+                }
+
+                .icon.collapse {
+                    background-position: (-3px - 21px * 11) (-8px - 21px * 29);
+                }
+            }
+
+            .node-label:hover {
+                background-color: #2a2d2e;
+                cursor: pointer;
+            }
+
+            &.selected > .node-label {
+                background-color: #094771;
+                color: #fff;
+            }
+
         }
 
         .node-children.hide {
@@ -69,8 +87,9 @@
 
     }
 
-    .content:hover .indent-guide {
-        border-color: #39393a;
+    .body:hover .indent-guide,
+    .node.selected .indent-guide {
+        border-color: #39393a!important;
     }
 
 }
