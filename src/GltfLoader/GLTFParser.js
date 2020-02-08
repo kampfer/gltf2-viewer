@@ -340,7 +340,7 @@ export default class GLTFParser {
                     object.add(childObject);
                 });
             }
-            object.name = `mesh_${meshIndex}`;
+            object.name = meshDef.name ? meshDef.name : `mesh_${meshIndex}`;
             return object;
         });
     }

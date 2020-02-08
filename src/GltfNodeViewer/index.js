@@ -17,7 +17,6 @@ class Node extends React.Component {
         super(props)
 
         this.state = {
-            expandable: props.node.children.length > 0,
             expanded: false
         };
 
@@ -119,21 +118,10 @@ export default class GltfNodeViewer extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.state = {
-            selectedNode: undefined
-        };
-
-        this.handleClickNode = this.handleClickNode.bind(this);
-    }
-
-    handleClickNode(uid) {
-        this.setState({ selectedNode: uid });
     }
 
     render() {
-        let state = this.state,
-            props = this.props,
+        let props = this.props,
             gltf = props.gltf,
             nodes = gltf && gltf.scenes[gltf.scene].children;
 
@@ -147,8 +135,8 @@ export default class GltfNodeViewer extends React.Component {
                                     node={node}
                                     level={0}
                                     key={node.uid}
-                                    onClick={this.handleClickNode}
-                                    selectedNode={state.selectedNode}
+                                    onClick={props.onSelectNode}
+                                    selectedNode={props.selectedNode}
                                 ></Node>
                         )
                     }
