@@ -1,4 +1,5 @@
 import React from 'react';
+import { GridContainer, Grid } from '../Grid';
 import GltfLoader from '../GltfLoader';
 import GltfRenderer from '../GltfRenderer';
 import GltfNodeViewer from '../GltfNodeViewer';
@@ -57,12 +58,12 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <div className="container">
-                <div className="side">
+            <GridContainer>
+                <Grid width={240}>
                     <GltfNodeViewer gltf={this.state.gltf}></GltfNodeViewer>
-                </div>
-                <div className="main" onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
-                    <Stats ref={this.stats} right={5} top={5}/>
+                </Grid>
+                <Grid flexGrow={1}>
+                    <Stats ref={this.stats} right={5} top={5} />
                     <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                     <GltfRenderer
                         gltf={this.state.gltf}
@@ -70,8 +71,8 @@ export default class App extends React.Component {
                         beforeRender={() => this.stats.current.begin()}
                         afterRender={() => this.stats.current.end()}
                     />
-                </div>
-            </div>
+                </Grid>
+            </GridContainer>
         );
     }
 
