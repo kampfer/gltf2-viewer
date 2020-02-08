@@ -3,6 +3,7 @@ import { GridContainer, Grid } from '../Grid';
 import GltfLoader from '../GltfLoader';
 import GltfRenderer from '../GltfRenderer';
 import GltfNodeViewer from '../GltfNodeViewer';
+import GltfNodePropertyViewer from '../GltfNodePropertyViewer';
 import Stats from '../Stats';
 
 import './index.less';
@@ -14,6 +15,7 @@ export default class App extends React.Component {
 
         this.state = { 
             gltf: null,
+            selectedNode: undefined,
             hideFileReader: false,
             hideGltfRenderer: true
         };
@@ -22,6 +24,7 @@ export default class App extends React.Component {
         this.showGltfRenderer = this.showGltfRenderer.bind(this);
         this.handleDragStart = this.handleDragStart.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
+        this.setSelectedNode = this.setSelectedNode.bind(this);
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
@@ -56,21 +59,46 @@ export default class App extends React.Component {
         this.gltfLoader.current.handleDrop(e);
     }
 
+    setSelectedNode(uid) {
+        this.setState({selectedNode: uid});
+    }
+
     render() {
+        let state = this.state,
+            selectedNode = state.selectedNode;
         return (
             <GridContainer>
                 <Grid width={240}>
-                    <GltfNodeViewer gltf={this.state.gltf}></GltfNodeViewer>
+                    <GridContainer vertical>
+                        <Grid>
+                            <GltfNodeViewer
+                                gltf={this.state.gltf}
+                                onSelectNode={this.setSelectedNode}
+                                selectedNode={selectedNode}
+                            ></GltfNodeViewer>
+                        </Grid>
+                        <Grid>
+                            <div style={{height: 3}}></div>
+                        </Grid>
+                        <Grid flexGrow={1}>
+                            <GltfNodePropertyViewer gltf={this.state.gltf} selectedNode={selectedNode}></GltfNodePropertyViewer>
+                        </Grid>
+                    </GridContainer>
+                </Grid>
+                <Grid>
+                    <div style={{width: 3}}></div>
                 </Grid>
                 <Grid flexGrow={1}>
-                    <Stats ref={this.stats} right={5} top={5} />
-                    <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
-                    <GltfRenderer
-                        gltf={this.state.gltf}
-                        hide={this.state.hideGltfRenderer}
-                        beforeRender={() => this.stats.current.begin()}
-                        afterRender={() => this.stats.current.end()}
-                    />
+                    <div style={{width: '100%', height: '100%'}} onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
+                        <Stats ref={this.stats} right={5} top={5} />
+                        <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
+                        <GltfRenderer
+                            gltf={this.state.gltf}
+                            hide={this.state.hideGltfRenderer}
+                            beforeRender={() => this.stats.current.begin()}
+                            afterRender={() => this.stats.current.end()}
+                        />
+                    </div>
                 </Grid>
             </GridContainer>
         );
