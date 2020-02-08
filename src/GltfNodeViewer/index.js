@@ -1,6 +1,15 @@
 import './index.less';
 
 import React from 'react';
+import Panel from '../Panel';
+import { ObjectType } from '@webglRenderEngine/constants';
+
+const nodeTypeToIcon = {
+    [ObjectType.GraphObject]: 'empty-object',
+    [ObjectType.Mesh]: 'mesh',
+    [ObjectType.PerspectiveCamera]: 'camera',
+    [ObjectType.OrthographicCamera]: 'camera'
+};
 
 class Node extends React.Component {
 
@@ -35,26 +44,38 @@ class Node extends React.Component {
         if (this.props.onClick) this.props.onClick(this.props.node.uid);
     }
 
+    createIcon(type = nodeTypeToIcon[ObjectType.GraphObject], index) {
+        return <div className={`icon ${type}`} key={index}></div>
+    }
+
     render() {
         let props = this.props,
             node = props.node,
             level = props.level,
             name = this.getNodeName(node),
-            className = 'node',
             expanded = this.state.expanded,
             selected = props.selectedNode === node.uid,
+            className = 'node',
             indentGuides = [],
+            icons = [],
             children;
 
-        if (expanded) {
-            className += ' collapsed';
+        if (selected) {
+            className += ' selected';
         }
 
         if (node.children.length > 0) {
-            className += ' expandable';
+
+            if (expanded) {
+                className += ' expanded';
+            } else {
+                className += ' collapsed';
+            }
+
+            icons.push(this.createIcon(expanded ? 'collapse' : 'expand', icons.length));
 
             children = (
-                <div className={expanded ? 'node-children' : 'node-children hide'}>
+                <div className='node-children'>
                     {
                         node.children.map(
                             child => 
@@ -69,9 +90,10 @@ class Node extends React.Component {
                     }
                 </div>
             );
-        } else {
-            className += ' default';
+
         }
+
+        icons.push(this.createIcon(nodeTypeToIcon[node.type], icons.length));
 
         for(let i = 0; i < level; i++) {
             indentGuides.push(<div className="indent-guide" key={i}></div>);
@@ -79,10 +101,11 @@ class Node extends React.Component {
 
         return (
             <div className={className}>
-                <div className={"node-label" + (selected ? ' selected' : '')} onClick={this.handleClick}>
+                <div className="node-label" onClick={this.handleClick}>
                     <div className="indent">
                         { indentGuides }
                     </div>
+                    { icons }
                     <div className="node-name">{name}</div>
                 </div>
                 { children }
@@ -115,9 +138,8 @@ export default class GltfNodeViewer extends React.Component {
             nodes = gltf && gltf.scenes[gltf.scene].children;
 
         return (
-            <div className="gltf-node-viewer">
-                <div className="title">Scene Collection</div>
-                <div className="content">
+            <Panel className="gltf-node-viewer" title="节点大纲">
+                <div className="node-list">
                     {
                         nodes && nodes.map(
                             node => 
@@ -131,7 +153,7 @@ export default class GltfNodeViewer extends React.Component {
                         )
                     }
                 </div>
-            </div>
+            </Panel>
         );
     }
 
