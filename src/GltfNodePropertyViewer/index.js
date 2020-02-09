@@ -10,6 +10,12 @@ const defaultValues = {
     scale: {x:0, y:0, z:0}
 };
 
+const units = {
+    position: 'm',
+    rotation: '\u00B0',
+    scale: '',
+}
+
 export default class GltfNodePropertyViewer extends React.Component {
 
     formatValue(v) {
@@ -40,15 +46,16 @@ export default class GltfNodePropertyViewer extends React.Component {
         return (
             <Panel className="gltf-node-property-viewer" title="物体属性">
                 {
-                    ['Position', 'Scale'].map((propertyName) => {
-                        let property = node[propertyName.toLowerCase()];
+                    ['Position', 'Rotation', 'Scale'].map((propertyName) => {
+                        let propertyNameInLowerCase = propertyName.toLowerCase(),
+                            property = node[propertyNameInLowerCase];
                         return (
                             <div className="input-group" key={propertyName}>
                                 {
                                     ['x', 'y', 'z'].map((key, index) => 
                                         <div className="input-wrapper" key={key}>
                                             <label className="input-name">{(index === 0 ? propertyName : '') + ' ' + key.toUpperCase()}</label>
-                                            <SlideInput value={this.formatValue(property[key])} unit="m"/>
+                                            <SlideInput value={this.formatValue(property[key])} unit={units[propertyNameInLowerCase]}/>
                                         </div>
                                     )
                                 }
