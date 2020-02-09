@@ -16,21 +16,19 @@ const units = {
     scale: '',
 }
 
-export default class GltfNodePropertyViewer extends React.Component {
-
-    formatValue(v) {
-        let decimal = v % 1,
-            integer = Math.abs(v - decimal),
-            precision = 0;
-
-        if (decimal !== 0) {
-            precision = 5 - integer.toString().length;
-        }
-
-        if (precision < 0) precision = 0;
-
-        return v.toFixed(precision);
+const unitFormaters = {
+    rotation: function (v) {
+        return v * 180 / Math.PI;
+    },
+    position: function (v) {
+        return v;
+    },
+    scale: function (v) {
+        return v;
     }
+}
+
+export default class GltfNodePropertyViewer extends React.Component {
 
     render() {
         let props = this.props,
@@ -55,7 +53,7 @@ export default class GltfNodePropertyViewer extends React.Component {
                                     ['x', 'y', 'z'].map((key, index) => 
                                         <div className="input-wrapper" key={key}>
                                             <label className="input-name">{(index === 0 ? propertyName : '') + ' ' + key.toUpperCase()}</label>
-                                            <SlideInput value={this.formatValue(property[key])} unit={units[propertyNameInLowerCase]}/>
+                                            <SlideInput value={unitFormaters[propertyNameInLowerCase](property[key])} unit={units[propertyNameInLowerCase]}/>
                                         </div>
                                     )
                                 }
