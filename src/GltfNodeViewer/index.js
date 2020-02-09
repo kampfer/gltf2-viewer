@@ -20,7 +20,8 @@ class Node extends React.Component {
             expanded: false
         };
 
-        this.handleClick = this.handleClick.bind(this);
+        this.handleExpandAndCollapse = this.handleExpandAndCollapse.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
     }
 
     getNodeName(node) {
@@ -33,18 +34,23 @@ class Node extends React.Component {
         return name;
     }
 
-    handleClick(e) {
+    handleExpandAndCollapse(e) {
         e.preventDefault();
         e.stopPropagation();
 
         let expanded = !this.state.expanded;
         this.setState({ expanded });
-
-        if (this.props.onClick) this.props.onClick(this.props.node.uid);
     }
 
-    createIcon(type = nodeTypeToIcon[ObjectType.GraphObject], index) {
-        return <div className={`icon ${type}`} key={index}></div>
+    handleSelect(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (this.props.onSelectNode) this.props.onSelectNode(this.props.node.uid);
+    }
+
+    createIcon(type = nodeTypeToIcon[ObjectType.GraphObject], index, onClick) {
+        return <div className={`icon ${type}`} key={index} onClick={onClick}>{type}</div>
     }
 
     render() {
@@ -71,7 +77,13 @@ class Node extends React.Component {
                 className += ' collapsed';
             }
 
-            icons.push(this.createIcon(expanded ? 'collapse' : 'expand', icons.length));
+            icons.push(
+                this.createIcon(
+                    expanded ? 'collapse' : 'expand',
+                    icons.length,
+                    this.handleExpandAndCollapse
+                )
+            );
 
             children = (
                 <div className='node-children'>
@@ -82,7 +94,7 @@ class Node extends React.Component {
                                     node={child}
                                     level={level + 1}
                                     key={child.uid}
-                                    onClick={props.onClick}
+                                    onSelectNode={props.onSelectNode}
                                     selectedNode={props.selectedNode}
                                 ></Node>
                         )
@@ -95,12 +107,15 @@ class Node extends React.Component {
         icons.push(this.createIcon(nodeTypeToIcon[node.type], icons.length));
 
         for(let i = 0; i < level; i++) {
-            indentGuides.push(<div className="indent-guide" key={i}></div>);
+            indentGuides.push(
+                <div className="indent-guide" key={i * 2}></div>,
+                <div className="indent-guide" key={i * 2 + 1}></div>
+            );
         }
 
         return (
             <div className={className}>
-                <div className="node-label" onClick={this.handleClick}>
+                <div className="node-label" onClick={this.handleSelect}>
                     <div className="indent">
                         { indentGuides }
                     </div>
@@ -135,7 +150,7 @@ export default class GltfNodeViewer extends React.Component {
                                     node={node}
                                     level={0}
                                     key={node.uid}
-                                    onClick={props.onSelectNode}
+                                    onSelectNode={props.onSelectNode}
                                     selectedNode={props.selectedNode}
                                 ></Node>
                         )

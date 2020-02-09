@@ -42,7 +42,6 @@ export default class GltfNodePropertyViewer extends React.Component {
                 {
                     ['Position', 'Scale'].map((propertyName) => {
                         let property = node[propertyName.toLowerCase()];
-                        if (property === null) debugger;
                         return (
                             <div className="input-group" key={propertyName}>
                                 {

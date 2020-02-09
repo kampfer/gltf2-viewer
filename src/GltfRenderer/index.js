@@ -48,8 +48,13 @@ export default class GltfRenderer extends React.Component {
     }
 
     render() {
+        let props = this.props,
+            style = {
+                display: props.hide ? 'none' : '',
+                borderRadius: '5px'
+            };
         return (
-            <canvas ref={this.webglCanvas} style={{display: this.props.hide ? 'none' : ''}}></canvas>
+            <canvas ref={this.webglCanvas} style={style}></canvas>
         );
     }
 
