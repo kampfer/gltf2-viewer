@@ -274,7 +274,7 @@ export default class GLTFParser {
                 // 这里需要新建新的节点，mesh作为新节点的子节点，保证每个node是唯一的
                 let object = new GraphObject();
 
-                object.name = `node_${nodeIndex}`;
+                object.name = nodeDef.name || `node_${nodeIndex}`;
 
                 objects.forEach((childObject) => {
                     if (childObject.parent) {
