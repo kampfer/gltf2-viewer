@@ -296,7 +296,7 @@ export default class GLTFParser {
                     }
 
                     if (nodeDef.scale) {
-                        object.scale.setFromArray(nodeDef.translation);
+                        object.scale.setFromArray(nodeDef.scale);
                     }
                 }
 
