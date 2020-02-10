@@ -47,17 +47,6 @@ export default class GltfRenderer extends React.Component {
         }
     }
 
-    render() {
-        let props = this.props,
-            style = {
-                display: props.hide ? 'none' : '',
-                borderRadius: '5px'
-            };
-        return (
-            <canvas ref={this.webglCanvas} style={style}></canvas>
-        );
-    }
-
     stopRender() {
         cancelAnimationFrame(this._animationTimer);
     }
@@ -122,6 +111,17 @@ export default class GltfRenderer extends React.Component {
         }
 
         animate();
+    }
+
+    render() {
+        let props = this.props,
+            style = {
+                display: props.hide ? 'none' : 'block',
+                borderRadius: '5px'
+            };
+        return (
+            <canvas ref={this.webglCanvas} style={style}></canvas>
+        );
     }
 
 }
