@@ -68,7 +68,7 @@ export default class App extends React.Component {
             selectedNode = state.selectedNode;
         return (
             <GridContainer>
-                <Grid width={240}>
+                <Grid width={300}>
                     <GridContainer vertical>
                         <Grid>
                             <GltfNodeViewer
