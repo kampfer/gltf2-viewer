@@ -67,11 +67,12 @@ export default class App extends React.Component {
 
     render() {
         let state = this.state,
+            gltf = state.gltf,
             selectedNode = state.selectedNode;
         return (
             <GridContainer vertical>
                 <Grid>
-                    <TopBar></TopBar>
+                    <TopBar openFile={() => this.gltfLoader.current.chooseGltf()}></TopBar>
                 </Grid>
                 <Grid>
                     <div style={{height: 3}}></div>
@@ -82,7 +83,7 @@ export default class App extends React.Component {
                             <GridContainer vertical>
                                 <Grid>
                                     <GltfNodeViewer
-                                        gltf={this.state.gltf}
+                                        gltf={state.gltf}
                                         onSelectNode={this.setSelectedNode}
                                         selectedNode={selectedNode}
                                     ></GltfNodeViewer>
@@ -91,7 +92,7 @@ export default class App extends React.Component {
                                     <div style={{height: 3}}></div>
                                 </Grid>
                                 <Grid flexGrow={1}>
-                                    <GltfNodePropertyViewer gltf={this.state.gltf} selectedNode={selectedNode}></GltfNodePropertyViewer>
+                                    <GltfNodePropertyViewer gltf={state.gltf} selectedNode={selectedNode}></GltfNodePropertyViewer>
                                 </Grid>
                             </GridContainer>
                         </Grid>
@@ -103,7 +104,7 @@ export default class App extends React.Component {
                                 <Stats ref={this.stats} right={5} top={5} />
                                 <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                                 <GltfRenderer
-                                    gltf={this.state.gltf}
+                                    gltf={state.gltf}
                                     hide={this.state.hideGltfRenderer}
                                     beforeRender={() => this.stats.current.begin()}
                                     afterRender={() => this.stats.current.end()}
@@ -116,7 +117,7 @@ export default class App extends React.Component {
                     <div style={{height: 3}}></div>
                 </Grid>
                 <Grid>
-                    <StatusBar></StatusBar>
+                    <StatusBar gltf={gltf}></StatusBar>
                 </Grid>
             </GridContainer>
         );
