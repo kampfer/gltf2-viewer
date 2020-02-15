@@ -10,6 +10,8 @@ import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
 
 import './index.less';
 
+let wireframeGeometries = new WeakMap();
+
 export default class GltfRenderer extends React.Component {
 
     constructor(props) {
@@ -118,9 +120,14 @@ export default class GltfRenderer extends React.Component {
 
             let selectedNode = scene.getChildByUid(self.props.selectedNode);
             if (selectedNode && selectedNode.geometry) {
-                let wireframe = new Mesh(new WireframeGeometry(selectedNode.geometry), selectedNode.material);
-                selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
-                wireframe.drawMode = 1;
+                let geometry = selectedNode.geometry,
+                    wireframe = wireframeGeometries.get(geometry);
+                if (!wireframe) {
+                    wireframe = new Mesh(new WireframeGeometry(geometry), selectedNode.material);
+                    wireframe.drawMode = 1;
+                    selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
+                    wireframeGeometries.set(geometry, wireframe);
+                }
                 renderer.render(wireframe, camera);
             }
 
