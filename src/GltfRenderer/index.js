@@ -5,6 +5,8 @@ import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraControl
 import Box3 from '@webglRenderEngine/math/Box3';
 import AnimationMixer from '@webglRenderEngine/animation/AnimationMixer';
 import Clock from '@webglRenderEngine/Clock';
+import Mesh from '@webglRenderEngine/Mesh';
+import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
 
 import './index.less';
 
@@ -22,7 +24,7 @@ export default class GltfRenderer extends React.Component {
 
     componentDidMount() {
         let canvas = this.webglCanvas.current;
-        this.webglRenderer = new WebGLRenderer({ canvas });
+        this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
 
         let width = canvas.parentNode.offsetWidth,
             height = canvas.parentNode.offsetHeight;
@@ -102,12 +104,27 @@ export default class GltfRenderer extends React.Component {
         let clock = new Clock();
 
         function animate() {
-            if (self.props.beforeRender) self.props.beforeRender();
-            self.mixer.update(clock.getDeltaTime());
-            camera.updateWorldMatrix();
-            renderer.render(scene, camera);
-            if (self.props.afterRender) self.props.afterRender();
             self._animationTimer = requestAnimationFrame(animate);
+
+            if (self.props.beforeRender) self.props.beforeRender();
+
+            renderer.clear();
+
+            self.mixer.update(clock.getDeltaTime());
+
+            camera.updateWorldMatrix();
+
+            renderer.render(scene, camera);
+
+            let selectedNode = scene.getChildByUid(self.props.selectedNode);
+            if (selectedNode && selectedNode.geometry) {
+                let wireframe = new Mesh(new WireframeGeometry(selectedNode.geometry), selectedNode.material);
+                selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
+                wireframe.drawMode = 1;
+                renderer.render(wireframe, camera);
+            }
+
+            if (self.props.afterRender) self.props.afterRender();
         }
 
         animate();

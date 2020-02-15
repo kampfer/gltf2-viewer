@@ -105,6 +105,7 @@ export default class App extends React.Component {
                                 <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                                 <GltfRenderer
                                     gltf={state.gltf}
+                                    selectedNode={state.selectedNode}
                                     hide={this.state.hideGltfRenderer}
                                     beforeRender={() => this.stats.current.begin()}
                                     afterRender={() => this.stats.current.end()}
