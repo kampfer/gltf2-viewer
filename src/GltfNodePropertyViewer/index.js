@@ -38,7 +38,7 @@ export default class GltfNodePropertyViewer extends React.Component {
 
         if (gltf && selectedNode) {
             let scene = gltf.scenes[gltf.scene];
-            node = scene.getNodeByUid(selectedNode);
+            node = scene.getChildByUid(selectedNode);
         }
 
         return (
