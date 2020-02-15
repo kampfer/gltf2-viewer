@@ -43,6 +43,7 @@ export default class App extends React.Component {
     showGltfRenderer(gltf) {
         this.setState({
             gltf,
+            selectedNode: undefined,
             hideFileReader: true,
             hideGltfRenderer: false
         });
