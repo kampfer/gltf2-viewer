@@ -2,13 +2,17 @@ import './index.less';
 
 import React from 'react';
 import Panel from '../Panel';
-import { ObjectType } from '@webglRenderEngine/constants';
+import {
+    OBJECT_TYPE_MESH,
+    OBJECT_TYPE_PERSPECTIVE_CAMERA,
+    OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
+} from '@webglRenderEngine/constants';
 
 const nodeTypeToIcon = {
-    [ObjectType.GraphObject]: 'empty-object',
-    [ObjectType.Mesh]: 'mesh',
-    [ObjectType.PerspectiveCamera]: 'camera',
-    [ObjectType.OrthographicCamera]: 'camera'
+    default: 'empty-object',
+    [OBJECT_TYPE_MESH]: 'mesh',
+    [OBJECT_TYPE_PERSPECTIVE_CAMERA]: 'camera',
+    [OBJECT_TYPE_ORTHOGRAPHIC_CAMERA]: 'camera'
 };
 
 class Node extends React.Component {
@@ -49,7 +53,7 @@ class Node extends React.Component {
         if (this.props.onSelectNode) this.props.onSelectNode(this.props.node.uid);
     }
 
-    createIcon(type = nodeTypeToIcon[ObjectType.GraphObject], index, onClick) {
+    createIcon(type = nodeTypeToIcon.default, index, onClick) {
         return <div className={`icon ${type}`} key={index} onClick={onClick}>{type}</div>
     }
 

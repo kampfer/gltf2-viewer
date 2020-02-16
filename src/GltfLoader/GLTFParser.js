@@ -2,7 +2,7 @@ import Scene from '@webglRenderEngine/Scene';
 import Mesh from '@webglRenderEngine/Mesh';
 import Geometry from '@webglRenderEngine/geometries/Geometry';
 import Material from '@webglRenderEngine/materials/Material';
-import BufferAttribute from '@webglRenderEngine/renderers/WebGLAttribute';
+import BufferAttribute from '@webglRenderEngine/renderers/BufferAttribute';
 import GraphObject from '@webglRenderEngine/GraphObject';
 import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
 import OrthographicCamera from '@webglRenderEngine/cameras/OrthographicCamera';
@@ -12,9 +12,9 @@ import NumberKeyFrameTrack from '@webglRenderEngine/animation/tracks/NumberKeyFr
 import VectorKeyFrameTrack from '@webglRenderEngine/animation/tracks/VectorKeyFrameTrack';
 import QuaternionKeyFrameTrack from '@webglRenderEngine/animation/tracks/QuaternionKeyFrameTrack';
 import {
-    LinearInterpolation,
-    StepInterpolation,
-    CubicSplineInterpolation
+    LINEAR_INTERPOLATION,
+    STEP_INTERPOLATION,
+    CUBIC_SPLINE_INTERPOLATION
 } from '@webglRenderEngine/constants';
 
 const attributeNameMap = {
@@ -62,9 +62,9 @@ const pathToPropertyMap = {
 };
 
 const interpolationMap = {
-    LINEAR: LinearInterpolation,
-    STEP: StepInterpolation,
-    CUBICSPLINE: CubicSplineInterpolation
+    LINEAR: LINEAR_INTERPOLATION,
+    STEP: STEP_INTERPOLATION,
+    CUBICSPLINE: CUBIC_SPLINE_INTERPOLATION
 };
 
 export default class GLTFParser {
@@ -445,14 +445,14 @@ export default class GLTFParser {
 
                 if (byteStride !== undefined && byteStride !== itemBytes ) {    // The buffer is not interleaved if the stride is the item size in bytes.
                     array = new TypedArray(arrayBuffer, 0, accessorDef.count * byteStride / TypedArray.BYTES_PER_ELEMENT);
-                    bufferAttribute = new BufferAttribute(array, bufferView.target, itemSize, normalized, byteStride, byteOffset);
+                    bufferAttribute = new BufferAttribute(array, itemSize, normalized, byteStride, byteOffset, bufferView.target);
                 } else {
                     if (arrayBuffer === null) {
                         array = new TypedArray(accessorDef.count * itemSize);
                     } else {
                         array = new TypedArray(arrayBuffer, byteOffset, itemSize * accessorDef.count);
                     }
-                    bufferAttribute = new BufferAttribute(array, bufferView.target, itemSize, normalized, 0, 0);
+                    bufferAttribute = new BufferAttribute(array, itemSize, normalized, 0, 0, bufferView.target);
                 }
 
                 if (accessorDef.sparse !== undefined) {
