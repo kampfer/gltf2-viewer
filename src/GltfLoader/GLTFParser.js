@@ -14,7 +14,9 @@ import QuaternionKeyFrameTrack from '@webglRenderEngine/animation/tracks/Quatern
 import {
     LINEAR_INTERPOLATION,
     STEP_INTERPOLATION,
-    CUBIC_SPLINE_INTERPOLATION
+    CUBIC_SPLINE_INTERPOLATION,
+    OBJECT_TYPE_PERSPECTIVE_CAMERA,
+    OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
 } from '@webglRenderEngine/constants';
 
 const attributeNameMap = {
@@ -130,13 +132,14 @@ export default class GLTFParser {
 
         return Promise.all([
             this.parseScenes(),
-            this.parseAnimations()
-        ]).then(function ([scenes, animations]) {
+            this.parseAnimations(),
+            this.parseCameras(),
+        ]).then(function ([scenes, animations, cameras]) {
             return {
                 asset: data.asset,
                 scenes,
                 scene: data.scene,
-                cammera: [],
+                cameras,
                 animations
             };
         });
@@ -154,6 +157,14 @@ export default class GLTFParser {
             animations = data.animations || [];
         return Promise.all(
             animations.map((animation, index) => this._parse('animation', index))
+        );
+    }
+
+    parseCameras() {
+        let data = this._data,
+            cameras = data.cameras || [];
+        return Promise.all(
+            cameras.map((camera, index) => this._parse('camera', index))
         );
     }
 
@@ -270,18 +281,36 @@ export default class GLTFParser {
 
         return Promise.all(parsePromises)
             .then((objects) => {
-                // node可能共用mesh，但是transform（matrix、translation等等）可能不一样，所以不能直接将mesh当作node
-                // 这里需要新建新的节点，mesh作为新节点的子节点，保证每个node是唯一的
-                let object = new GraphObject();
-
-                object.name = nodeDef.name || `node_${nodeIndex}`;
-
-                objects.forEach((childObject) => {
-                    if (childObject.parent) {
-                        childObject = childObject.clone();
+                let object;
+                if (objects.length === 0) {
+                    object = new GraphObject();
+                    object.name = nodeDef.name || `group_${nodeIndex}`;
+                } else if (objects.length === 1) {
+                    object = objects[0];
+                    if (object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
+                        object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                            //
+                    } else {
+                        // mesh可以被node共用，但是node的transform（matrix、translation等等）可能不一样
+                        // 所以这里需要再将mesh当作node返回之前，可能一次节点，保证transform不被覆盖
+                        //
+                        // parse mesh可能返回mesh或mesh的列表，所以不能直接用type===mash判断是否为mesh
+                        // 这里只要不是相机就克隆节点
+                        object = object.clone();
                     }
-                    object.add(childObject);
-                });
+                } else if (objects.length > 1) {
+                    object = new GraphObject();
+                    objects.forEach((childObject) => {
+                        if (childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
+                            childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                            //
+                        } else {
+                            childObject = childObject[0].clone();
+                        }
+                        object.add(childObject);
+                    });
+                    object.name = nodeDef.name || `mesh&camera_${nodeIndex}`;
+                }
 
                 if (nodeDef.matrix) {
                     let matrix = new Mat4(nodeDef.matrix);

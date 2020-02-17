@@ -1,12 +1,14 @@
 import React from 'react';
 import WebGLRenderer from '@webglRenderEngine/renderers/WebGLRenderer';
 import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
-import OrbitCameraController from '@webglRenderEngine/cameras/OrbitCameraController';
+import OrbitCameraController from '@webglRenderEngine/controllers/OrbitController';
 import Box3 from '@webglRenderEngine/math/Box3';
 import AnimationMixer from '@webglRenderEngine/animation/AnimationMixer';
 import Clock from '@webglRenderEngine/Clock';
 import Mesh from '@webglRenderEngine/Mesh';
 import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
+import Scene from '@webglRenderEngine/Scene';
+import CameraView from './CameraView';
 
 import './index.less';
 
@@ -60,34 +62,16 @@ export default class GltfRenderer extends React.Component {
 
         let scene = gltf.scenes[gltf.scene],
             renderer = this.webglRenderer,
-            self = this;
-
-        let cameras = []
-        scene.children.forEach((child) => {
-            if (child.type === 'PerspectiveCamera' || child.type === 'OrthographicCamera') {
-                cameras.push(child);
-            }
-        });
-
-        let box = new Box3(),
+            self = this,
+            box = new Box3(),
             size = box.setFromObject(scene).getSize(),
             center = box.getCenter(),
             length = size.length(),
-            camera = null,
-            index = 0;
-        if (cameras.length > 0) {
-            let theirCamera = cameras[index];
-            if (theirCamera.tyep === 'PerspectiveCamera') {
-                camera = new PerspectiveCamera(theirCamera.fovy, theirCamera.aspect, theirCamera.near, theirCamera.far);
-            } else if (theirCamera.type === 'OrthographicCamera') {
-                //
-            }
-        } else {
-            let canvas = this.webglCanvas.current,
-                width = canvas.parentNode.offsetWidth,
-                height = canvas.parentNode.offsetHeight;
+            canvas = this.webglCanvas.current,
+            width = canvas.parentNode.offsetWidth,
+            height = canvas.parentNode.offsetHeight,
             camera = new PerspectiveCamera(90 * (Math.PI / 180), width / height, 0.1, length * 100);
-        }
+
         camera.position.copy(center);
         camera.position.z += length;
         camera.lookAt(center);
@@ -112,11 +96,8 @@ export default class GltfRenderer extends React.Component {
 
             renderer.clear();
 
-            self.mixer.update(clock.getDeltaTime());
-
-            camera.updateWorldMatrix();
-
-            renderer.render(scene, camera);
+            // 保存网格、相机等其他辅助对象
+            let scene2 = new Scene();
 
             let selectedNode = scene.getChildByUid(self.props.selectedNode);
             if (selectedNode && selectedNode.geometry) {
@@ -128,8 +109,22 @@ export default class GltfRenderer extends React.Component {
                     selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
                     wireframeGeometries.set(geometry, wireframe);
                 }
-                renderer.render(wireframe, camera);
+                scene2.add(wireframe);
             }
+
+            gltf.cameras.forEach(function (camera) {
+                let cameraViwer = new CameraView(length, length / 2, length);
+                cameraViwer.position.copy(camera.position);
+                scene2.add(cameraViwer);
+            });
+
+            self.mixer.update(clock.getDeltaTime());
+
+            camera.updateWorldMatrix();
+
+            renderer.render(scene, camera);
+
+            renderer.render(scene2, camera);
 
             if (self.props.afterRender) self.props.afterRender();
         }
