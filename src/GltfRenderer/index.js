@@ -75,6 +75,7 @@ export default class GltfRenderer extends React.Component {
         camera.position.copy(center);
         camera.position.z += length;
         camera.lookAt(center);
+        camera.updateWorldMatrix();
 
         if (this.cameraController) {
             this.cameraController.destroy();
@@ -112,18 +113,16 @@ export default class GltfRenderer extends React.Component {
                 scene2.add(wireframe);
             }
 
-            gltf.cameras.forEach(function (camera) {
-                let cameraViwer = new CameraView(length, length / 2, length);
-                cameraViwer.position.copy(camera.position);
+            gltf.cameras.forEach(function (gltfCamera) {
+                let cameraViwer = new CameraView(length * 0.4, length * 0.1, length * 0.4);
+                cameraViwer.position.setFromMatrixPosition(gltfCamera.worldMatrix);
+                cameraViwer.quaternion.setFromRotationMatrix(gltfCamera.worldMatrix);
                 scene2.add(cameraViwer);
             });
 
             self.mixer.update(clock.getDeltaTime());
 
-            camera.updateWorldMatrix();
-
             renderer.render(scene, camera);
-
             renderer.render(scene2, camera);
 
             if (self.props.afterRender) self.props.afterRender();

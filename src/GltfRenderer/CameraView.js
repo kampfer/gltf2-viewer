@@ -9,23 +9,24 @@ export default class CameraView extends GraphObject {
 
     constructor(width, height, length) {
         super();
+        this.color = [0, 0, 0, 1];
         this.add(this.makeCameraBody(width, height, length));
-        this.add(this.makeCameraUp(width * 0.8, height / 2, length, height / 2));
+        this.add(this.makeCameraUp(width, height, length));
     }
 
     makeCameraBody(width, height, length) {
         let material = new Material();
-        material.color = [0, 0, 0, 1];
+        material.color = this.color;
 
         let halfWidth = width / 2,
             halfHeight = height / 2,
             geometry = new Geometry(),
             vertices = new Float32Array([
                 0, 0, 0,
-                length, halfHeight, -halfWidth,
-                length, -halfHeight, halfWidth,
-                length, halfHeight, halfWidth,
-                length, -halfHeight, -halfWidth
+                halfWidth, halfHeight, -length,
+                -halfWidth, halfHeight, -length,
+                -halfWidth, -halfHeight, -length,
+                halfWidth, -halfHeight, -length,
             ]),
             indices = new Uint8Array([
                 0, 1,
@@ -44,17 +45,20 @@ export default class CameraView extends GraphObject {
         return new LineSegments(geometry, material);
     }
 
-    makeCameraUp(width, height, left, bottom) {
+    makeCameraUp(bodyWidth, bodyHeight, bodyLength) {
         let material = new Material();
-        material.color = [0, 0, 0, 1];
+        material.color = this.color;
 
-        let halfWidth = width / 2,
-            offset = 0.1,
+        let width = bodyWidth * 0.8,
+            height = bodyHeight / 4,
+            halfWidth = width / 2,
+            bottom = bodyHeight / 2,
+            offset = height * 0.25,
             upTriangleGeometry = new Geometry(),
             upTriangleVertices = new Float32Array([
-                left, bottom + offset, -halfWidth,
-                left, bottom + offset + height, 0,
-                left, bottom + offset, halfWidth,
+                halfWidth, bottom + offset, -bodyLength,
+                0, bottom + offset + height, -bodyLength,
+                -halfWidth, bottom + offset, -bodyLength,
             ]),
             upTriangleIndices = new Uint8Array([0, 1, 2]);
         upTriangleGeometry.setAttribute('position', new BufferAttribute(upTriangleVertices, 3));
