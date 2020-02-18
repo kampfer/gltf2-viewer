@@ -24,17 +24,17 @@ export default class GltfRenderer extends React.Component {
         };
 
         this.webglCanvas = React.createRef();
+
+        this.handleResize = this.handleResize.bind(this);
     }
 
     componentDidMount() {
         let canvas = this.webglCanvas.current;
+
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
-
-        let width = canvas.parentNode.offsetWidth,
-            height = canvas.parentNode.offsetHeight;
-        this.webglRenderer.setSize(width, height);
-
         this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
+
+        this.handleResize();
     }
 
     componentWillUnmount() {
@@ -42,15 +42,13 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        this.handleResize();
+
         if (prevProps.gltf === this.props.gltf) {
             return;
         }
 
-        let gltf = this.props.gltf;
-        if (gltf) {
-            this.stopRender();
-            this.renderGltf(gltf);
-        }
+        this.startRenderLater();
     }
 
     stopRender() {
@@ -136,6 +134,26 @@ export default class GltfRenderer extends React.Component {
         }
 
         animate();
+    }
+
+    handleResize() {
+        let canvas = this.webglCanvas.current,
+            width = canvas.parentNode.offsetWidth,
+            height = canvas.parentNode.offsetHeight;
+        this.webglRenderer.setSize(width, height);
+
+        this.startRenderLater();
+    }
+
+    startRenderLater() {
+        this._startRenderTimer = setTimeout(() => {
+            clearTimeout(this._startRenderTimer);
+            let gltf = this.props.gltf;
+            if (gltf) {
+                this.stopRender();
+                this.renderGltf(gltf);
+            }
+        });
     }
 
     render() {

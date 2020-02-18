@@ -19,7 +19,9 @@ export default class App extends React.Component {
             gltf: null,
             selectedNode: undefined,
             hideFileReader: false,
-            hideGltfRenderer: true
+            hideGltfRenderer: true,
+            sideBarWith: 240,
+            nodeViewerHeight: 560
         };
 
         this.showFileReader = this.showFileReader.bind(this);
@@ -27,6 +29,8 @@ export default class App extends React.Component {
         this.handleDragStart = this.handleDragStart.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
         this.setSelectedNode = this.setSelectedNode.bind(this);
+        this.changeNodeViewerHeight = this.changeNodeViewerHeight.bind(this);
+        this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
@@ -66,6 +70,14 @@ export default class App extends React.Component {
         this.setState({selectedNode: uid});
     }
 
+    changeSideBarWidth({size}) {
+        this.setState({sideBarWith: size});
+    }
+
+    changeNodeViewerHeight({size}) {
+        this.setState({nodeViewerHeight: size});
+    }
+
     render() {
         let state = this.state,
             gltf = state.gltf,
@@ -80,10 +92,10 @@ export default class App extends React.Component {
                 </Grid>
                 <Grid flexGrow={1}>
                     <GridContainer>
-                        <Grid width={300}>
+                        <Grid width={state.sideBarWith} resizableX onResize={this.changeSideBarWidth}>
                             <GridContainer vertical>
-                                <Grid>
-                                    <GltfNodeViewer
+                                <Grid height={state.nodeViewerHeight} resizableY onResize={this.changeNodeViewerHeight}>
+                                    <GltfNodeViewer height={state.nodeViewerHeight}
                                         gltf={state.gltf}
                                         onSelectNode={this.setSelectedNode}
                                         selectedNode={selectedNode}
@@ -101,7 +113,7 @@ export default class App extends React.Component {
                             <div style={{width: 3}}></div>
                         </Grid>
                         <Grid flexGrow={1}>
-                            <div style={{width: '100%', height: '100%'}} className="bg-color-black-1 border-radius-5" onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
+                            <div style={{width: window.innerWidth - state.sideBarWith - 3, height: '100%'}} className="bg-color-black-1 border-radius-5" onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
                                 <Stats ref={this.stats} right={5} top={5} />
                                 <GltfLoader ref={this.gltfLoader} onSuccess={this.showGltfRenderer} hide={this.state.hideFileReader} />
                                 <GltfRenderer
