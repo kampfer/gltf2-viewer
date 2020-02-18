@@ -5,9 +5,9 @@ import OrbitCameraController from '@webglRenderEngine/controllers/OrbitControlle
 import Box3 from '@webglRenderEngine/math/Box3';
 import AnimationMixer from '@webglRenderEngine/animation/AnimationMixer';
 import Clock from '@webglRenderEngine/Clock';
-import Mesh from '@webglRenderEngine/Mesh';
+import Mesh from '@webglRenderEngine/objects/Mesh';
 import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
-import Scene from '@webglRenderEngine/Scene';
+import Scene from '@webglRenderEngine/objects/Scene';
 import CameraView from './CameraView';
 
 import './index.less';
