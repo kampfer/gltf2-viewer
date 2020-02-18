@@ -97,6 +97,10 @@ export default class GltfRenderer extends React.Component {
 
             renderer.clear();
 
+            self.mixer.update(clock.getDeltaTime());
+
+            renderer.render(scene, camera);
+
             // 保存网格、相机等其他辅助对象
             let scene2 = new Scene();
 
@@ -114,15 +118,18 @@ export default class GltfRenderer extends React.Component {
             }
 
             gltf.cameras.forEach(function (gltfCamera) {
-                let cameraViwer = new CameraView(length * 0.4, length * 0.1, length * 0.4);
-                cameraViwer.position.setFromMatrixPosition(gltfCamera.worldMatrix);
-                cameraViwer.quaternion.setFromRotationMatrix(gltfCamera.worldMatrix);
+                let cameraViwer = new CameraView(length / 4, length / 8, length / 4);
+
+                // 这里有两种选择：worldMatirx和matrix
+                // 使用worldMatrix时需要保证renderer.render内部不再compose matrix
+                // 使用matrix时需要构造gltfCamera的所有父辈节点，并且复制它们的matrix
+                // 我选择第一种方式，因为简单！
+                cameraViwer.applyMatrix(gltfCamera.worldMatrix);
+                cameraViwer.autoUpdateMatrix = false;
+
                 scene2.add(cameraViwer);
             });
 
-            self.mixer.update(clock.getDeltaTime());
-
-            renderer.render(scene, camera);
             renderer.render(scene2, camera);
 
             if (self.props.afterRender) self.props.afterRender();
