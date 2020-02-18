@@ -146,19 +146,21 @@ export default class GltfNodeViewer extends React.Component {
 
         return (
             <Panel className="gltf-node-viewer" title="节点大纲">
-                <div className="node-list">
-                    {
-                        nodes && nodes.map(
-                            node => 
-                                <Node
-                                    node={node}
-                                    level={0}
-                                    key={node.uid}
-                                    onSelectNode={props.onSelectNode}
-                                    selectedNode={props.selectedNode}
-                                ></Node>
-                        )
-                    }
+                <div className="node-list-wrapper" style={{height: props.height - 30}}>
+                    <div className="node-list">
+                        {
+                            nodes && nodes.map(
+                                node =>
+                                    <Node
+                                        node={node}
+                                        level={0}
+                                        key={node.uid}
+                                        onSelectNode={props.onSelectNode}
+                                        selectedNode={props.selectedNode}
+                                    ></Node>
+                            )
+                        }
+                    </div>
                 </div>
             </Panel>
         );
