@@ -2,8 +2,8 @@ import Material from '@webglRenderEngine/materials/Material';
 import Geometry from '@webglRenderEngine/geometries/Geometry';
 import BufferAttribute from '@webglRenderEngine/renderers/BufferAttribute';
 import LineSegments from '@webglRenderEngine/objects/LineSegments';
-import Mesh from '@webglRenderEngine/Mesh';
-import GraphObject from '@webglRenderEngine/GraphObject';
+import Mesh from '@webglRenderEngine/objects/Mesh';
+import GraphObject from '@webglRenderEngine/objects/GraphObject';
 
 export default class CameraView extends GraphObject {
 
