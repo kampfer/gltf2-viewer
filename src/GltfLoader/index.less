@@ -1,44 +1,35 @@
 .file-uploader {
 
-    width: 100%;
-    height: 100%;
-    position: relative;
-    font-size: 18px;
+    width: 300px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-150px, -70px);
 
-    .file-uploader__tip {
-
-        width: 100%;
-        text-align: center;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-70px);
-
-        .file-uploader__icon {
-            width: 100%;
-            height: 80px;
-            fill: #ccc;
-            margin-bottom: 40px;
-        }
-
-        .file-uploader__file {
-            display: none;
-        }
-    
-        label {
-            cursor: pointer;
-            line-height: 20px;
-            height: 20px;
-            display: inline-block;
-        }
-    
-        label:hover strong {
-            color: #fff;
-        }
-
+    &.hide {
+        display: none;
     }
 
-}
+    .file-uploader__icon {
+        fill: #ccc;
+        margin-bottom: 40px;
+    }
 
-.file-uploader.hide {
-    display: none ;
+    .file-uploader__file {
+        display: none;
+    }
+
+    label {
+        cursor: pointer;
+        line-height: 20px;
+        height: 20px;
+        display: inline-block;
+        font-size: 16px;
+    }
+
+    label:hover strong {
+        color: #fff;
+    }
+
 }
