@@ -153,7 +153,7 @@ export default class GltfRenderer extends React.Component {
                 this.stopRender();
                 this.renderGltf(gltf);
             }
-        });
+        }, 20);
     }
 
     render() {
