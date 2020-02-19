@@ -24,8 +24,6 @@ export default class GltfRenderer extends React.Component {
         };
 
         this.webglCanvas = React.createRef();
-
-        this.handleResize = this.handleResize.bind(this);
     }
 
     componentDidMount() {
@@ -33,8 +31,6 @@ export default class GltfRenderer extends React.Component {
 
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
         this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
-
-        this.handleResize();
     }
 
     componentWillUnmount() {
@@ -42,11 +38,16 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        this.handleResize();
+        let props = this.props;
 
-        if (prevProps.gltf === this.props.gltf) {
+        if (prevProps.gltf === props.gltf) {
             return;
         }
+
+        let width = props.width,
+            height = props.height;
+
+        this.webglRenderer.setViewport(0, 0, width, height);
 
         this.startRenderLater();
     }
@@ -136,15 +137,6 @@ export default class GltfRenderer extends React.Component {
         animate();
     }
 
-    handleResize() {
-        let canvas = this.webglCanvas.current,
-            width = canvas.parentNode.offsetWidth,
-            height = canvas.parentNode.offsetHeight;
-        this.webglRenderer.setSize(width, height);
-
-        this.startRenderLater();
-    }
-
     startRenderLater() {
         this._startRenderTimer = setTimeout(() => {
             clearTimeout(this._startRenderTimer);
@@ -158,12 +150,14 @@ export default class GltfRenderer extends React.Component {
 
     render() {
         let props = this.props,
+            width = props.width,
+            height = props.height,
             style = {
-                display: props.hide ? 'none' : 'block',
+                display: 'block',
                 borderRadius: '5px'
             };
         return (
-            <canvas ref={this.webglCanvas} style={style}></canvas>
+            <canvas ref={this.webglCanvas} style={style} width={width} height={height}></canvas>
         );
     }
 
