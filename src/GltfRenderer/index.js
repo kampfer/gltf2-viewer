@@ -81,6 +81,7 @@ export default class GltfRenderer extends React.Component {
         }
         this.cameraController = new OrbitCameraController(camera, renderer.domElement);
         this.cameraController.target = center;
+        this.cameraController.panSpeed = window.innerWidth / length;
 
         if (this.mixer) {
             this.mixer.destroy();
@@ -151,13 +152,9 @@ export default class GltfRenderer extends React.Component {
     render() {
         let props = this.props,
             width = props.width,
-            height = props.height,
-            style = {
-                display: 'block',
-                borderRadius: '5px'
-            };
+            height = props.height;
         return (
-            <canvas ref={this.webglCanvas} style={style} width={width} height={height}></canvas>
+            <canvas ref={this.webglCanvas} width={width} height={height} tabIndex="1" className="gltf-renderer"></canvas>
         );
     }
 
