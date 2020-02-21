@@ -288,7 +288,7 @@ export default class GLTFParser {
                 } else if (objects.length === 1) {
                     object = objects[0];
                     if (object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
-                        object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                        object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
                             //
                     } else {
                         // mesh可以被node共用，但是node的transform（matrix、translation等等）可能不一样
@@ -302,7 +302,7 @@ export default class GLTFParser {
                     object = new GraphObject();
                     objects.forEach((childObject) => {
                         if (childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
-                            childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                            childObject.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
                             //
                         } else {
                             childObject = childObject[0].clone();
