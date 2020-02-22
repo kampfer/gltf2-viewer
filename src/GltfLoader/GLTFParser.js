@@ -18,6 +18,7 @@ import {
     OBJECT_TYPE_PERSPECTIVE_CAMERA,
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
 } from '@webglRenderEngine/constants';
+import Color from '@webglRenderEngine/math/Color';
 
 const attributeNameMap = {
     'POSITION': 'position',
@@ -429,11 +430,11 @@ export default class GLTFParser {
 
         if (data.materials && data.materials[MaterialIndex]) {
             let materialDef = data.materials[MaterialIndex];
-            material.color = materialDef.pbrMetallicRoughness.baseColorFactor || [1, 1, 1, 1];
+            material.color = new Color(materialDef.pbrMetallicRoughness.baseColorFactor || [1, 1, 1]);
             material.metallicFactor = materialDef.pbrMetallicRoughness.metallicFactor || 1;
             material.roughnessFactor = materialDef.pbrMetallicRoughness.roughnessFactor || 1;
         } else {
-            material.color = [0, 0, 0, 1];
+            material.color = new Color([0, 0, 0, 1]);
         }
 
         return material;

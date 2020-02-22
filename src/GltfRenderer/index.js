@@ -9,6 +9,7 @@ import Mesh from '@webglRenderEngine/objects/Mesh';
 import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
 import Scene from '@webglRenderEngine/objects/Scene';
 import CameraView from './CameraView';
+import GridHelper  from '@webglRenderEngine/helpers/GridHelper';
 
 import './index.less';
 
@@ -129,6 +130,9 @@ export default class GltfRenderer extends React.Component {
 
                 scene2.add(cameraViwer);
             });
+
+            let gridHelper = new GridHelper(length * 15, 20, '#ccc');
+            scene2.add(gridHelper);
 
             renderer.render(scene2, camera);
 

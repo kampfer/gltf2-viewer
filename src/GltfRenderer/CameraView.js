@@ -4,12 +4,13 @@ import BufferAttribute from '@webglRenderEngine/renderers/BufferAttribute';
 import LineSegments from '@webglRenderEngine/objects/LineSegments';
 import Mesh from '@webglRenderEngine/objects/Mesh';
 import GraphObject from '@webglRenderEngine/objects/GraphObject';
+import Color from '@webglRenderEngine/math/Color';
 
 export default class CameraView extends GraphObject {
 
     constructor(width, height, length) {
         super();
-        this.color = [0, 0, 0, 1];
+        this.color = new Color([0, 0, 0, 1]);
         this.add(this.makeCameraBody(width, height, length));
         this.add(this.makeCameraUp(width, height, length));
     }
