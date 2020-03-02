@@ -1,24 +1,28 @@
-import Scene from '@webglRenderEngine/objects/Scene';
-import Mesh from '@webglRenderEngine/objects/Mesh';
-import Geometry from '@webglRenderEngine/geometries/Geometry';
-import Material from '@webglRenderEngine/materials/Material';
-import BufferAttribute from '@webglRenderEngine/renderers/BufferAttribute';
-import GraphObject from '@webglRenderEngine/objects/GraphObject';
-import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
-import OrthographicCamera from '@webglRenderEngine/cameras/OrthographicCamera';
-import Mat4 from '@webglRenderEngine/math/Mat4';
-import AnimationClip from '@webglRenderEngine/animation/AnimationClip';
-import NumberKeyFrameTrack from '@webglRenderEngine/animation/tracks/NumberKeyFrameTrack';
-import VectorKeyFrameTrack from '@webglRenderEngine/animation/tracks/VectorKeyFrameTrack';
-import QuaternionKeyFrameTrack from '@webglRenderEngine/animation/tracks/QuaternionKeyFrameTrack';
 import {
+    Scene,
+    Mesh,
+    Geometry,
+    Material,
+    BufferAttribute,
+    GraphObject,
+    PerspectiveCamera,
+    OrthographicCamera,
+    Mat4,
+    AnimationClip,
+    NumberKeyFrameTrack,
+    VectorKeyFrameTrack,
+    QuaternionKeyFrameTrack,
+    constants,
+    Color
+} from 'webglRenderEngine';
+
+const {
     LINEAR_INTERPOLATION,
     STEP_INTERPOLATION,
     CUBIC_SPLINE_INTERPOLATION,
     OBJECT_TYPE_PERSPECTIVE_CAMERA,
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
-} from '@webglRenderEngine/constants';
-import Color from '@webglRenderEngine/math/Color';
+} = constants;
 
 const attributeNameMap = {
     'POSITION': 'position',

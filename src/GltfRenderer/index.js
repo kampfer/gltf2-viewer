@@ -1,15 +1,17 @@
 import React from 'react';
-import WebGLRenderer from '@webglRenderEngine/renderers/WebGLRenderer';
-import PerspectiveCamera from '@webglRenderEngine/cameras/PerspectiveCamera';
-import OrbitCameraController from '@webglRenderEngine/controllers/OrbitController';
-import Box3 from '@webglRenderEngine/math/Box3';
-import AnimationMixer from '@webglRenderEngine/animation/AnimationMixer';
-import Clock from '@webglRenderEngine/Clock';
-import Mesh from '@webglRenderEngine/objects/Mesh';
-import WireframeGeometry from '@webglRenderEngine/geometries/WireframeGeometry';
-import Scene from '@webglRenderEngine/objects/Scene';
-import CameraView from './CameraView';
-import GridHelper  from '@webglRenderEngine/helpers/GridHelper';
+import {
+    WebGLRenderer,
+    PerspectiveCamera,
+    OrbitController,
+    Box3,
+    AnimationMixer,
+    Clock,
+    Mesh,
+    WireframeGeometry,
+    Scene,
+    GridHelper,
+    CameraHelper,
+} from 'webglRenderEngine';
 
 import './index.less';
 
@@ -80,7 +82,7 @@ export default class GltfRenderer extends React.Component {
         if (this.cameraController) {
             this.cameraController.destroy();
         }
-        this.cameraController = new OrbitCameraController(camera, renderer.domElement);
+        this.cameraController = new OrbitController(camera, renderer.domElement);
         this.cameraController.target = center;
         this.cameraController.panSpeed = window.innerWidth / length;
 
@@ -119,16 +121,8 @@ export default class GltfRenderer extends React.Component {
             }
 
             gltf.cameras.forEach(function (gltfCamera) {
-                let cameraViwer = new CameraView(length / 4, length / 8, length / 4);
-
-                // 这里有两种选择：worldMatirx和matrix
-                // 使用worldMatrix时需要保证renderer.render内部不再compose matrix
-                // 使用matrix时需要构造gltfCamera的所有父辈节点，并且复制它们的matrix
-                // 我选择第一种方式，因为简单！
-                cameraViwer.applyMatrix(gltfCamera.worldMatrix);
-                cameraViwer.autoUpdateMatrix = false;
-
-                scene2.add(cameraViwer);
+                let cameraHelper = new CameraHelper(gltfCamera);
+                scene2.add(cameraHelper);
             });
 
             let gridHelper = new GridHelper(length * 15, 20, '#ccc');
