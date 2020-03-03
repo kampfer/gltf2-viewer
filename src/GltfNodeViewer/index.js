@@ -2,11 +2,13 @@ import './index.less';
 
 import React from 'react';
 import Panel from '../Panel';
-import {
+import { constants } from 'webglRenderEngine';
+
+const {
     OBJECT_TYPE_MESH,
     OBJECT_TYPE_PERSPECTIVE_CAMERA,
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
-} from '@webglRenderEngine/constants';
+} = constants;
 
 const nodeTypeToIcon = {
     default: 'empty-object',
