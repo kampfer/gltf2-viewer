@@ -96,10 +96,12 @@ export default class GltfRenderer extends React.Component {
 
             self.mixer.update(clock.getDeltaTime());
 
-            renderer.render(scene, camera);
+            let backgroundScene = new Scene();
 
-            // 保存网格、相机等其他辅助对象
-            let scene2 = new Scene();
+            let gridHelper = new GridHelper(length * 15, 20, '#ccc');
+            backgroundScene.add(gridHelper);
+
+            let foregroundScene = new Scene();
 
             let selectedNode = scene.getChildByUid(self.props.selectedNode);
             if (selectedNode && selectedNode.geometry) {
@@ -111,18 +113,17 @@ export default class GltfRenderer extends React.Component {
                     selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
                     wireframeGeometries.set(geometry, wireframe);
                 }
-                scene2.add(wireframe);
+                foregroundScene.add(wireframe);
             }
 
             gltf.cameras.forEach(function (gltfCamera) {
                 let cameraHelper = new CameraHelper(gltfCamera);
-                scene2.add(cameraHelper);
+                foregroundScene.add(cameraHelper);
             });
 
-            let gridHelper = new GridHelper(length * 15, 20, '#ccc');
-            scene2.add(gridHelper);
-
-            renderer.render(scene2, camera);
+            renderer.render(backgroundScene, camera);
+            renderer.render(scene, camera);
+            renderer.render(foregroundScene, camera);
 
             if (self.props.afterRender) self.props.afterRender();
         }
