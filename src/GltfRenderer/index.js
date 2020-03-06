@@ -79,7 +79,6 @@ export default class GltfRenderer extends React.Component {
         }
         this.cameraController = new OrbitController(camera, renderer.domElement);
         this.cameraController.target = center;
-        this.cameraController.panSpeed = window.innerWidth / length;
 
         if (this.mixer) {
             this.mixer.destroy();
