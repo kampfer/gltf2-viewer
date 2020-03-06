@@ -380,17 +380,24 @@ export default class GLTFParser {
     }
 
     parseCamera(cameraIndex) {
+
         let data = this._data,
-            cameraDef = data.cameras[cameraIndex];
+            cameraDef = data.cameras[cameraIndex],
+            camera;
+
         if (cameraDef.type === 'perspective') {
             let {yfov, aspectRatio, zfar, znear} = cameraDef.perspective;
-            return new PerspectiveCamera(yfov, aspectRatio, znear, zfar);
+            camera = new PerspectiveCamera(yfov, aspectRatio, znear, zfar);
         } else if (cameraDef.type === 'orthographic') {
             let {xmag, ymag, zfar, znear} = cameraDef.orthographic;
-            return new OrthographicCamera(-xmag / 2, xmag / 2, ymag / 2, -ymag / 2, zfar, znear);
+            camera = new OrthographicCamera(-xmag / 2, xmag / 2, ymag / 2, -ymag / 2, zfar, znear);
         } else {
             throw '不支持的camera类型';
         }
+
+        camera.name = cameraDef.name || `${cameraDef.type}Camera.${cameraIndex}`;
+
+        return camera;
     }
 
     parsePrimitive(primitive) {
