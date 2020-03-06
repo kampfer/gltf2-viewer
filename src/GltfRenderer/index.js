@@ -31,9 +31,9 @@ export default class GltfRenderer extends React.Component {
 
     componentDidMount() {
         let canvas = this.webglCanvas.current;
-
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
         this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
+        this.startRenderLater();
     }
 
     componentWillUnmount() {
@@ -43,16 +43,11 @@ export default class GltfRenderer extends React.Component {
     componentDidUpdate(prevProps) {
         let props = this.props;
 
-        if (prevProps.gltf === props.gltf) {
-            return;
+        if (prevProps.gltf !== props.gltf ||
+            prevProps.width !== props.width ||
+            prevProps.height !== props.height) {
+            this.startRenderLater();
         }
-
-        let width = props.width,
-            height = props.height;
-
-        this.webglRenderer.setViewport(0, 0, width, height);
-
-        this.startRenderLater();
     }
 
     stopRender() {
@@ -137,14 +132,16 @@ export default class GltfRenderer extends React.Component {
     }
 
     startRenderLater() {
+        clearTimeout(this._startRenderTimer);
         this._startRenderTimer = setTimeout(() => {
-            clearTimeout(this._startRenderTimer);
-            let gltf = this.props.gltf;
+            let props = this.props,
+                gltf = props.gltf;
             if (gltf) {
                 this.stopRender();
+                this.webglRenderer.setViewport(0, 0, props.width, props.height);
                 this.renderGltf(gltf);
             }
-        }, 20);
+        }, 100);
     }
 
     render() {

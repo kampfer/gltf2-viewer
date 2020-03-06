@@ -118,7 +118,8 @@ export default class FileReader extends React.Component {
         let fileLoader = new FileLoader({baseUrl: path.dirname(url)}),
             gltfParser = new GLTFParser({loader: fileLoader});
 
-        return fileLoader.load(url).then(function (json) {
+        return fileLoader.load(path.basename(url))
+            .then(function (json) {
                 return gltfParser.parse(json);
             });
     }
