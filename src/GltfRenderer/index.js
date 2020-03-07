@@ -85,7 +85,8 @@ export default class GltfRenderer extends React.Component {
         }
         this.mixer = new AnimationMixer(gltf.animations);
 
-        let clock = new Clock();
+        let clock = new Clock(),
+            selectedNode;
 
         function animate() {
             self._animationTimer = requestAnimationFrame(animate);
@@ -103,7 +104,9 @@ export default class GltfRenderer extends React.Component {
 
             let foregroundScene = new Scene();
 
-            let selectedNode = scene.getChildByUid(self.props.selectedNode);
+            // 不再隐藏上一次选中的对象
+            if (selectedNode) selectedNode.visible = true;
+            selectedNode = scene.getChildByUid(self.props.selectedNode);
             if (selectedNode && selectedNode.geometry) {
                 let geometry = selectedNode.geometry,
                     wireframe = wireframeGeometries.get(geometry);
@@ -114,6 +117,8 @@ export default class GltfRenderer extends React.Component {
                     wireframeGeometries.set(geometry, wireframe);
                 }
                 foregroundScene.add(wireframe);
+                // 隐藏选中的对象，只显示其网格
+                selectedNode.visible = false;
             }
 
             gltf.cameras.forEach(function (gltfCamera) {
