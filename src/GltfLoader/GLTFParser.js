@@ -13,7 +13,8 @@ import {
     VectorKeyFrameTrack,
     QuaternionKeyFrameTrack,
     constants,
-    Color
+    Color,
+    Group
 } from 'webglRenderEngine';
 
 const {
@@ -287,8 +288,8 @@ export default class GLTFParser {
         return Promise.all(parsePromises)
             .then((objects) => {
                 let object;
-                if (objects.length === 0) {
-                    object = new GraphObject();
+                if (objects.length === 0) { // 只有children没有mesh或者camera
+                    object = new Group();
                     object.name = nodeDef.name || `group_${nodeIndex}`;
                 } else if (objects.length === 1) {
                     object = objects[0];
@@ -303,7 +304,7 @@ export default class GLTFParser {
                         // 这里只要不是相机就克隆节点
                         object = object.clone();
                     }
-                } else if (objects.length > 1) {
+                } else if (objects.length > 1) {    // 同时包含mesh和camera（应该不存在这种情况）
                     object = new GraphObject();
                     objects.forEach((childObject) => {
                         if (childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
@@ -362,19 +363,20 @@ export default class GLTFParser {
         return Promise.all(
             primitives.map(primitive => this.parsePrimitive(primitive))
         ).then((objects) => {
-            let object;
+            let object,
+                name = meshDef.name ? meshDef.name : `mesh_${meshIndex}`;
             if (objects.length === 0) {
                 object = new GraphObject();
             } else if (objects.length === 1) {
                 object = objects[0];
             } else {
-                // object = new Group();
-                object = new GraphObject();
-                objects.forEach((childObject) => {
+                object = new Group();
+                objects.forEach((childObject, i) => {
+                    childObject.name = `${name}_primitive_${i}`;
                     object.add(childObject);
                 });
             }
-            object.name = meshDef.name ? meshDef.name : `mesh_${meshIndex}`;
+            object.name = name;
             return object;
         });
     }
