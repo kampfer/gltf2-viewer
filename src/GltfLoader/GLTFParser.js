@@ -16,6 +16,7 @@ import {
     Color,
     Group
 } from 'webglRenderEngine';
+import GLTFBinaryReader from './GLTFBinaryReader';
 
 const {
     LINEAR_INTERPOLATION,
@@ -75,6 +76,11 @@ const interpolationMap = {
     CUBICSPLINE: CUBIC_SPLINE_INTERPOLATION
 };
 
+const DATA_TYPE = {
+    GLB: 'GLB',
+    GLTF: 'GLTF'
+};
+
 export default class GLTFParser {
 
     constructor(opts) {
@@ -82,9 +88,10 @@ export default class GLTFParser {
         this._cache = null;
     }
 
-    reset(data) {
+    reset(data, type) {
         this._cache = {};
         this._data = data;
+        this._type = type;
     }
 
     _parse(type, index) {
@@ -130,11 +137,36 @@ export default class GLTFParser {
         return parsePromise;
     }
 
-    parse(data) {
-        console.log('data:', data);
+    parseArrayBuffer(data) {
+        let reader = new GLTFBinaryReader(data),
+            content = reader.content;
+
+        data = JSON.parse(content);
+
+        // parse buffer时需要使用reader.body
+        this._binaryReader = reader;
 
         // 重置所有属性（主要是缓存，以及gltf数据）
-        this.reset(data);
+        this.reset(data, DATA_TYPE.GLB);
+
+        return Promise.all([
+            this.parseScenes(),
+            this.parseAnimations(),
+            this.parseCameras(),
+        ]).then(function ([scenes, animations, cameras]) {
+            return {
+                asset: data.asset,
+                scenes,
+                scene: data.scene,
+                cameras,
+                animations
+            };
+        });
+    }
+
+    parseJson(data) {
+        // 重置所有属性（主要是缓存，以及gltf数据）
+        this.reset(data, DATA_TYPE.GLTF);
 
         return Promise.all([
             this.parseScenes(),
@@ -559,7 +591,12 @@ export default class GLTFParser {
 
             return Promise.resolve(bufferView.buffer);
         } else {
-            return this._loader.load(bufferDef.uri);
+            if (bufferDef.uri) {
+                return this._loader.load(bufferDef.uri);
+            } else if (this._type === DATA_TYPE.GLB) {
+                return Promise.resolve(this._binaryReader.body);
+            }
+            
         }
     }
 

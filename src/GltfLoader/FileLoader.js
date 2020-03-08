@@ -36,11 +36,7 @@ export default class GLTFLoader {
         console.log(`request: ${url}(${modifiedUrl})`);
         let p = fetch(modifiedUrl).then(function (res) {
             if (res.ok) {
-                if (path.extname(url) === '.gltf') {
-                    return res.json();
-                } else {
-                    return res.arrayBuffer();
-                }
+                return res;
             } else {
                 throw('Network response was not ok.');
             }

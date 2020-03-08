@@ -49,7 +49,7 @@ export default class FileReader extends React.Component {
 
         let callback = this.state.successCallback;
         if (callback) {
-            this.loadGltf(e.dataTransfer.files).then(callback);
+            this.loadGltfFromFiles(e.dataTransfer.files).then(callback);
         }
     }
 
@@ -59,22 +59,31 @@ export default class FileReader extends React.Component {
         let files = e.currentTarget.files;
         let callback = this.state.successCallback;
         if (callback) {
-            this.loadGltf(files).then(callback);
+            this.loadGltfFromFiles(files).then(callback);
         }
     }
 
-    loadGltf(files) {
+    loadGltfFromFiles(files) {
+
         if (files && files.length > 0) {
+
             let gltfFile,
+                gltfType,
                 fileMap = {};
+
             // e.dataTransfer.files是一个filelist不是数组，必须手动遍历。
             for(let i = 0, l = files.length; i < l; i++) {
-                let file = files[i];
+
+                let file = files[i],
+                    extname = path.extname(file.name).slice(1);
+
                 fileMap[file.name] = file;
 
-                if (file.name.match(/\.(gltf|glb)$/)) {
+                if (extname === 'gltf' || extname === 'glb') {
                     gltfFile = file;
+                    gltfType = extname;
                 }
+
             }
 
             if (!gltfFile) {
@@ -85,7 +94,7 @@ export default class FileReader extends React.Component {
 
             // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
             let fileLoader = new FileLoader(),
-                gltfParser = new GLTFParser({ loader: fileLoader});
+                gltfParser = new GLTFParser({ loader: fileLoader });
 
             let blobURLs = [];
             fileLoader.setURLModifier(function (url) {
@@ -98,8 +107,20 @@ export default class FileReader extends React.Component {
             });
 
             let p = fileLoader.load(gltfFile.name)
-                .then(function (json) {
-                    return gltfParser.parse(json);
+                .then(function (data) {
+                    if (gltfType === 'gltf') {
+                        return data.json();
+                    } else if (gltfType === 'glb') {
+                        return data.arrayBuffer();
+                    }
+                })
+                .then(function (data) {
+                     console.log('data:', data);
+                    if (gltfType === 'gltf') {
+                        return gltfParser.parseJson(data);
+                    } else if(gltfType === 'glb') {
+                        return gltfParser.parseArrayBuffer(data);
+                    }
                 });
 
             blobURLs.forEach(function (url) {
@@ -107,7 +128,9 @@ export default class FileReader extends React.Component {
             });
 
             return p;
+
         }
+
     }
 
     chooseGltf() {
