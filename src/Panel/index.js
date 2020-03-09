@@ -14,7 +14,7 @@ export default class Panel extends React.Component {
                     <div className="name">{props.title}</div>
                     <div className="tools"></div>
                 </div>
-                <div className="body">{props.children}</div>
+                <div className="body" style={{height: props.height - 30}}>{props.children}</div>
             </div>
         )
     }

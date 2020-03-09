@@ -147,8 +147,8 @@ export default class GltfNodeViewer extends React.Component {
             nodes = gltf && gltf.scenes[gltf.scene].children;
 
         return (
-            <Panel className="gltf-node-viewer" title="节点大纲">
-                <div className="node-list-wrapper" style={{height: props.height - 30}}>
+            <Panel className="gltf-node-viewer" title="节点大纲" height={props.height}>
+                <div className="node-list-wrapper">
                     <div className="node-list">
                         {
                             nodes && nodes.map(
