@@ -16,12 +16,20 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
+        let sideBarWith = 240,
+            nodeViewerHeight = 560,
+            winWidth = window.innerWidth,
+            winHeight = window.innerHeight,
+            padding = 3;
+
         this.state = {
             gltf: null,
             selectedNode: undefined,
             hideFileReader: false,
-            sideBarWith: 240,
-            nodeViewerHeight: 560
+            sideBarWith: sideBarWith,
+            nodeViewerHeight: nodeViewerHeight,
+            rendererWidth: winWidth - sideBarWith - padding,
+            rendererHeight: winHeight - 30 - padding - 20 -padding
         };
 
         this.renderGltf = this.renderGltf.bind(this);
@@ -30,6 +38,7 @@ export default class App extends React.Component {
         this.setSelectedNode = this.setSelectedNode.bind(this);
         this.changeNodeViewerHeight = this.changeNodeViewerHeight.bind(this);
         this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
+        this.handleWinResize = this.handleWinResize.bind(this);
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
@@ -70,13 +79,30 @@ export default class App extends React.Component {
         this.setState({nodeViewerHeight: size + deltaSize});
     }
 
+    handleWinResize() {
+        let state = this.state,
+            winWidth = window.innerWidth,
+            winHeight = window.innerHeight,
+            padding = 3,
+            rendererWidth = winWidth - state.sideBarWith - padding,
+            rendererHeight = winHeight - 30 - padding - 20 -padding;
+
+        this.setState({rendererWidth, rendererHeight});
+    }
+
+    componentDidMount() {
+        window.addEventListener('resize', this.handleWinResize);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleWinResize);
+    }
+
     render() {
 
         let state = this.state,
             gltf = state.gltf,
-            selectedNode = state.selectedNode,
-            canvasWidth = window.innerWidth - state.sideBarWith - 3,
-            canvasHeight = window.innerHeight - 30 - 3 - 20 -3;
+            selectedNode = state.selectedNode;
 
         return (
             <GridContainer vertical>
@@ -113,8 +139,8 @@ export default class App extends React.Component {
                                     hide={this.state.hideGltfRenderer}
                                     beforeRender={() => this.stats.current.begin()}
                                     afterRender={() => this.stats.current.end()}
-                                    width={canvasWidth}
-                                    height={canvasHeight}
+                                    width={state.rendererWidth}
+                                    height={state.rendererHeight}
                                 />
                             </div>
                         </Grid>
