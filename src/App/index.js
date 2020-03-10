@@ -8,6 +8,7 @@ import Stats from '../Stats';
 import TopBar from '../TopBar';
 import StatusBar from '../StatusBar';
 import ResizeHelper from '../ResizeHelper';
+import debounce from '../utils/debounce';
 
 import './index.less';
 
@@ -38,7 +39,7 @@ export default class App extends React.Component {
         this.setSelectedNode = this.setSelectedNode.bind(this);
         this.changeNodeViewerHeight = this.changeNodeViewerHeight.bind(this);
         this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
-        this.handleWinResize = this.handleWinResize.bind(this);
+        this.handleWinResize = debounce(this.handleWinResize, 100).bind(this);
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
