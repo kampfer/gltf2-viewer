@@ -6,7 +6,8 @@ import {
     Box3,
     AnimationMixer,
     Clock,
-    Mesh,
+    LineSegments,
+    LineBasicMaterial,
     WireframeGeometry,
     Scene,
     GridHelper,
@@ -120,8 +121,7 @@ export default class GltfRenderer extends React.Component {
                 let geometry = selectedNode.geometry,
                     wireframe = wireframeGeometries.get(geometry);
                 if (!wireframe) {
-                    wireframe = new Mesh(new WireframeGeometry(geometry), selectedNode.material);
-                    wireframe.drawMode = 1;
+                    wireframe = new LineSegments(new WireframeGeometry(geometry), new LineBasicMaterial({color: 'black'}));
                     selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
                     wireframeGeometries.set(geometry, wireframe);
                 }
