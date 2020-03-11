@@ -17,6 +17,7 @@ import {
     Group
 } from 'webglRenderEngine';
 import GLTFBinaryReader from './GLTFBinaryReader';
+import CameraHelper from './CameraHelper';
 
 const {
     LINEAR_INTERPOLATION,
@@ -327,7 +328,7 @@ export default class GLTFParser {
                     object = objects[0];
                     if (object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
                         object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-                            //
+                            object = new CameraHelper(object);
                     } else {
                         // mesh可以被node共用，但是node的transform（matrix、translation等等）可能不一样
                         // 所以这里需要再将mesh当作node返回之前，可能一次节点，保证transform不被覆盖

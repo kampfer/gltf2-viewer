@@ -10,7 +10,7 @@ import {
     WireframeGeometry,
     Scene,
     GridHelper,
-    CameraHelper,
+    Vec3,
 } from 'webglRenderEngine';
 
 import './index.less';
@@ -85,6 +85,15 @@ export default class GltfRenderer extends React.Component {
         }
         this.mixer = new AnimationMixer(gltf.animations);
 
+        scene.traverse(function (child) {
+            if (child.isCameraHelper === true) {
+                let helperSize = new Box3().setFromObject(child).getSize(),
+                    scale = new Vec3(0.2, 0.2, 0.2);
+                scale.multiply(size).divide(helperSize);
+                child.update(scale);
+            }
+        });
+
         let clock = new Clock(),
             selectedNode;
 
@@ -120,11 +129,6 @@ export default class GltfRenderer extends React.Component {
                 // 隐藏选中的对象，只显示其网格
                 selectedNode.visible = false;
             }
-
-            gltf.cameras.forEach(function (gltfCamera) {
-                let cameraHelper = new CameraHelper(gltfCamera);
-                foregroundScene.add(cameraHelper);
-            });
 
             renderer.render(backgroundScene, camera);
             renderer.render(scene, camera);
