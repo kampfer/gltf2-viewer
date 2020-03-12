@@ -1,5 +1,15 @@
 .gltf-node-viewer {
 
+    .node-list-wrapper {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
     .node-list {
 
         font-size: 13px;
@@ -19,17 +29,16 @@
                 .indent {
 
                     height: 100%;
-                    transform: translateX(10px);
 
                     .indent-guide {
                         box-sizing: border-box;
-                        width: 20px;
+                        width: 10px;
                         height: 100%;
                         float: left;
                         border-left: 1px solid transparent;
                     }
 
-                    .indent-guide.active {
+                    .indent-guide.active:nth-child(even) {
                         border-color: #585858;
                     }
 
@@ -37,6 +46,10 @@
 
                 .node-name {
                     margin-left: 5px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 70%;
                 }
 
                 .children-type {
@@ -60,6 +73,10 @@
                     background-position: (-3px - 21px * 1) (-8px - 21px * 20);
                 }
 
+                .icon.camera {
+                    background-position: (-3px - 21px * 6) (-8px - 21px * 20);
+                }
+
                 .icon.expand {
                     background-position: (-3px - 21px * 10) (-8px - 21px * 29);
                 }
@@ -79,16 +96,20 @@
                 color: #fff;
             }
 
-        }
+            &.expanded .node-children {
+                display: unset;
+            }
 
-        &.expanded .node-children {
-            display: none;
+            &.collapsed .node-children {
+                display: none;
+            }
+
         }
 
     }
 
-    .body:hover .indent-guide,
-    .node.selected .indent-guide {
+    .body:hover .indent-guide:nth-child(even),
+    .node.selected .node-children .indent-guide:nth-child(even):last-child {
         border-color: #39393a!important;
     }
 
