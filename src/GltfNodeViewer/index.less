@@ -1,3 +1,5 @@
+@import '../common/icons.less';
+
 .gltf-node-viewer {
 
     .node-list-wrapper {
@@ -18,13 +20,11 @@
 
             .node-label {
 
+                display: flex;
                 height: 22px;
                 line-height: 22px;
-                padding-left: 12px;
-
-                & > div {
-                    float: left;
-                }
+                padding: 0 10px 0 12px;
+                align-items: center;
 
                 .indent {
 
@@ -45,44 +45,11 @@
                 }
 
                 .node-name {
+                    flex: 1;
                     margin-left: 5px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    max-width: 70%;
-                }
-
-                .children-type {
-                    margin-left: 20px;
-                }
-
-                .icon {
-                    width: 20px;
-                    height: 20px;
-                    text-indent: -999px;
-                    background-image: url(../common/icons.svg);
-                    background-size: 602px 640px;
-                    background-repeat: no-repeat;
-                }
-
-                .icon.empty-object {
-                    background-position: (-3px - 21px * 0) (-8px - 21px * 20);
-                }
-
-                .icon.mesh {
-                    background-position: (-3px - 21px * 1) (-8px - 21px * 20);
-                }
-
-                .icon.camera {
-                    background-position: (-3px - 21px * 6) (-8px - 21px * 20);
-                }
-
-                .icon.expand {
-                    background-position: (-3px - 21px * 10) (-8px - 21px * 29);
-                }
-
-                .icon.collapse {
-                    background-position: (-3px - 21px * 11) (-8px - 21px * 29);
                 }
             }
 

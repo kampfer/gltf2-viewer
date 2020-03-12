@@ -23,11 +23,13 @@ class Node extends React.Component {
         super(props)
 
         this.state = {
-            expanded: false
+            expanded: false,
+            visible: props.node.visible
         };
 
         this.handleExpandAndCollapse = this.handleExpandAndCollapse.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
+        this.toggleVisibility = this.toggleVisibility.bind(this);
     }
 
     getNodeName(node) {
@@ -56,15 +58,23 @@ class Node extends React.Component {
     }
 
     createIcon(type = nodeTypeToIcon.default, index, onClick) {
-        return <div className={`icon ${type}`} key={index} onClick={onClick}>{type}</div>
+        return <i className={`icon ${type}`} key={index} onClick={onClick}>{type}</i>
+    }
+
+    toggleVisibility() {
+        let visible = !this.state.visible;
+        this.props.node.visible = visible;
+        this.setState({visible});
     }
 
     render() {
         let props = this.props,
+            state = this.state,
             node = props.node,
             level = props.level,
             name = this.getNodeName(node),
-            expanded = this.state.expanded,
+            expanded = state.expanded,
+            visible = state.visible,
             selected = props.selectedNode === node.uid,
             className = 'node',
             indentGuides = [],
@@ -127,6 +137,7 @@ class Node extends React.Component {
                     </div>
                     { icons }
                     <div className="node-name">{name}</div>
+                    <i className={`icon ${visible ? 'visible' : 'hidden'}`} onClick={this.toggleVisibility}></i>
                 </div>
                 { children }
             </div>

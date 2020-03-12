@@ -3,13 +3,14 @@ import Panel from '../Panel';
 
 import './index.less';
 
-function Node() {
-    let props = this.props,
-        node = props.node,
+let types = ['empty-object', 'mesh', 'camera'];
+
+function Node(props) {
+    let node = props.node,
         level = props.level,
-        name = this.getNodeName(node),
-        expanded = this.state.expanded,
-        selected = props.selectedNode === node.uid,
+        expanded = node.expanded || Math.round(Math.random()),
+        // expanded = Math.round(Math.random()),
+        selected = Math.round(Math.random()),
         className = 'node',
         indentGuides = [],
         icons = [],
@@ -27,25 +28,17 @@ function Node() {
             className += ' collapsed';
         }
 
-        icons.push(
-            this.createIcon(
-                expanded ? 'collapse' : 'expand',
-                icons.length,
-                this.handleExpandAndCollapse
-            )
-        );
+        icons.push(<i className={`icon ${expanded ? 'collapse' : 'expand'}`} key={icons.length}>icon</i>);
 
         children = (
             <div className='node-children'>
                 {
                     node.children.map(
-                        child => 
+                        child =>
                             <Node
                                 node={child}
                                 level={level + 1}
                                 key={child.uid}
-                                onSelectNode={props.onSelectNode}
-                                selectedNode={props.selectedNode}
                             ></Node>
                     )
                 }
@@ -54,7 +47,7 @@ function Node() {
 
     }
 
-    icons.push(this.createIcon(nodeTypeToIcon[node.type], icons.length));
+    icons.push(<i className={`icon ${types[Math.round(Math.random() * 10) % 3]}`} key={icons.length}>icon</i>)
 
     for(let i = 0; i < level; i++) {
         indentGuides.push(
@@ -65,12 +58,13 @@ function Node() {
 
     return (
         <div className={className}>
-            <div className="node-label" onClick={this.handleSelect}>
-                <div className="indent">
+            <div className="node-label">
+                <div className="indent" style={{width: indentGuides.length * 10}}>
                     { indentGuides }
                 </div>
                 { icons }
-                <div className="node-name">{name}</div>
+                <div className="node-name">test node</div>
+                <i className="icon visible">icon</i>
             </div>
             { children }
         </div>
@@ -78,7 +72,24 @@ function Node() {
 }
 
 export default function GLTFNodePropertyViewer(props) {
-    let nodes = [];
+    let nodes = [{
+        uid: 1,
+        expanded: true,
+        children: [{
+            uid: 11,
+            expanded: true,
+            children: [{
+                uid: 111,
+                children: []
+            }]
+        }]
+    },{
+        uid: 2,
+        children: []
+    },{
+        uid: 3,
+        children: []
+    }];
     return (
         <Panel className="gltf-node-viewer" title="节点大纲" height={props.height}>
             <div className="node-list-wrapper">
@@ -90,8 +101,6 @@ export default function GLTFNodePropertyViewer(props) {
                                     node={node}
                                     level={0}
                                     key={node.uid}
-                                    onSelectNode={props.onSelectNode}
-                                    selectedNode={props.selectedNode}
                                 ></Node>
                         )
                     }

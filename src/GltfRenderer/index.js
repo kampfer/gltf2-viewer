@@ -115,20 +115,20 @@ export default class GltfRenderer extends React.Component {
             let foregroundScene = new Scene();
 
             // 不再隐藏上一次选中的对象
-            if (selectedNode) selectedNode.visible = true;
-            selectedNode = scene.getChildByUid(self.props.selectedNode);
-            if (selectedNode && selectedNode.geometry) {
-                let geometry = selectedNode.geometry,
-                    wireframe = wireframeGeometries.get(geometry);
-                if (!wireframe) {
-                    wireframe = new LineSegments(new WireframeGeometry(geometry), new LineBasicMaterial({color: 'black'}));
-                    selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
-                    wireframeGeometries.set(geometry, wireframe);
-                }
-                foregroundScene.add(wireframe);
-                // 隐藏选中的对象，只显示其网格
-                selectedNode.visible = false;
-            }
+            // if (selectedNode) selectedNode.visible = true;
+            // selectedNode = scene.getChildByUid(self.props.selectedNode);
+            // if (selectedNode && selectedNode.geometry) {
+            //     let geometry = selectedNode.geometry,
+            //         wireframe = wireframeGeometries.get(geometry);
+            //     if (!wireframe) {
+            //         wireframe = new LineSegments(new WireframeGeometry(geometry), new LineBasicMaterial({color: 'black'}));
+            //         selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
+            //         wireframeGeometries.set(geometry, wireframe);
+            //     }
+            //     foregroundScene.add(wireframe);
+            //     // 隐藏选中的对象，只显示其网格
+            //     selectedNode.visible = false;
+            // }
 
             renderer.render(backgroundScene, camera);
             renderer.render(scene, camera);
