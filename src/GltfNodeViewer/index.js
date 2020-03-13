@@ -61,7 +61,10 @@ class Node extends React.Component {
         return <i className={`icon ${type}`} key={index} onClick={onClick}>{type}</i>
     }
 
-    toggleVisibility() {
+    toggleVisibility(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         let visible = !this.state.visible;
         this.props.node.visible = visible;
         this.setState({visible});
