@@ -125,7 +125,11 @@ export default class App extends React.Component {
                                         </ResizeHelper>
                                     </Grid>
                                     <Grid flexGrow={1}>
-                                        <GltfNodePropertyViewer gltf={state.gltf} selectedNode={selectedNode}></GltfNodePropertyViewer>
+                                        <GltfNodePropertyViewer
+                                            gltf={state.gltf}
+                                            selectedNode={selectedNode}
+                                            height={window.innerHeight - state.nodeViewerHeight - 30 - 20 - 3 * 2}
+                                        ></GltfNodePropertyViewer>
                                     </Grid>
                                 </GridContainer>
                             </ResizeHelper>

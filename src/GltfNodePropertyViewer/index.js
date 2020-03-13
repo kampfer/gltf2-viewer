@@ -48,7 +48,7 @@ export default class GltfNodePropertyViewer extends React.Component {
         }
 
         return (
-            <Panel className="gltf-node-property-viewer" title="物体属性">
+            <Panel className="gltf-node-property-viewer" title="物体属性" height={props.height}>
                 {
                     node.isCameraHelper &&
                     <div className="input-group">
