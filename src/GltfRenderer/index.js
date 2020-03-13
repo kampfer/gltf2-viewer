@@ -12,11 +12,12 @@ import {
     Scene,
     GridHelper,
     Vec3,
+    OrthographicCamera,
+    mathUtils,
+    constants,
 } from 'webglRenderEngine';
 
 import './index.less';
-
-let wireframeGeometries = new WeakMap();
 
 export default class GltfRenderer extends React.Component {
 
@@ -28,9 +29,13 @@ export default class GltfRenderer extends React.Component {
         };
 
         this.webglCanvas = React.createRef();
+
+        this.handleKeyPress = this.handleKeyPress.bind(this);
     }
 
     componentDidMount() {
+        window.addEventListener('keypress', this.handleKeyPress, false);
+
         let canvas = this.webglCanvas.current;
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
         this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
@@ -38,6 +43,8 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentWillUnmount() {
+        window.removeEventListener('keypress', this.handleKeyPress);
+
         this.webglRenderer.destroy();
     }
 
@@ -48,6 +55,14 @@ export default class GltfRenderer extends React.Component {
             prevProps.width !== props.width ||
             prevProps.height !== props.height) {
             this.startRenderLater();
+        }
+    }
+
+    handleKeyPress(e) {
+        if (e.keyCode === 112) {    // p
+            this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
+        } else if (e.keyCode === 111) { // o
+            this.setActiveCamera(constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA);
         }
     }
 
@@ -68,18 +83,44 @@ export default class GltfRenderer extends React.Component {
             canvas = this.webglCanvas.current,
             width = canvas.parentNode.offsetWidth,
             height = canvas.parentNode.offsetHeight,
-            camera = new PerspectiveCamera(90 * (Math.PI / 180), width / height, 0.1, length * 100);
+            near = 0.1,
+            far = length * 100,
+            fovy = mathUtils.degToRad(90),
+            aspect = width / height,
+            perspectiveCamera = new PerspectiveCamera(fovy, aspect, near, far),
+            frustumSize = length,
+            orthographicCamera = new OrthographicCamera(-frustumSize * aspect / 2, frustumSize * aspect / 2, frustumSize / 2, -frustumSize / 2, near, far);
 
-        camera.position.copy(center);
-        camera.position.z += length;
-        camera.lookAt(center);
-        camera.updateWorldMatrix();
+        [perspectiveCamera, orthographicCamera].forEach((camera) => {
+            camera.position.copy(center);
+            camera.position.z += length;
+            camera.lookAt(center);
+            camera.updateWorldMatrix();
+        });
 
-        if (this.cameraController) {
-            this.cameraController.destroy();
-        }
-        this.cameraController = new OrbitController(camera, renderer.domElement);
-        this.cameraController.target = center;
+        this.setActiveCamera = function (type) {
+            let oldActiveCamera = this.activeCamera;
+
+            if (oldActiveCamera && oldActiveCamera.type === type) return;
+
+            if (type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                this.activeCamera = perspectiveCamera;
+            } else if (type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
+                this.activeCamera = orthographicCamera;
+            }
+
+            if (oldActiveCamera) {
+                this.activeCamera.applyMatrix(oldActiveCamera.matrix);
+            }
+
+            if (this.cameraController) {
+                this.cameraController.destroy();
+            }
+            this.cameraController = new OrbitController(this.activeCamera, this.webglRenderer.domElement);
+            this.cameraController.target = center;
+        };
+
+        this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
 
         if (this.mixer) {
             this.mixer.destroy();
@@ -95,8 +136,32 @@ export default class GltfRenderer extends React.Component {
             }
         });
 
-        let clock = new Clock(),
-            selectedNode;
+        let backgroundScene = new Scene(),
+            gridHelper = new GridHelper(length * 15, 20, '#ccc');
+        backgroundScene.add(gridHelper);
+
+        // 加上之后内存爆炸！首屏时间也明显增长！
+        // let wireframeScene = new Scene(),
+        //     wireframeMaterial = new LineBasicMaterial({color: '#eee'});
+        // wireframeScene.visible = false;
+        // wireframeScene.copy(scene, false);
+        // scene.traverse(function (child) {
+        //     if (child.geometry) {
+        //         let wireframe = new LineSegments(
+        //             new WireframeGeometry(child.geometry),
+        //             wireframeMaterial
+        //         );
+        //         wireframe.matrix.copy(child.matrix);
+        //         wireframe.position.copy(child.position);
+        //         wireframe.quaternion.copy(child.quaternion);
+        //         wireframe.scale.copy(child.scale);
+        //         wireframeScene.add(wireframe);
+        //     } else {
+        //         wireframeScene.add(child.clone());
+        //     }
+        // });
+
+        let clock = new Clock();
 
         function animate() {
             self._animationTimer = requestAnimationFrame(animate);
@@ -106,13 +171,6 @@ export default class GltfRenderer extends React.Component {
             renderer.clear();
 
             self.mixer.update(clock.getDeltaTime());
-
-            let backgroundScene = new Scene();
-
-            let gridHelper = new GridHelper(length * 15, 20, '#ccc');
-            backgroundScene.add(gridHelper);
-
-            let foregroundScene = new Scene();
 
             // 不再隐藏上一次选中的对象
             // if (selectedNode) selectedNode.visible = true;
@@ -130,9 +188,9 @@ export default class GltfRenderer extends React.Component {
             //     selectedNode.visible = false;
             // }
 
-            renderer.render(backgroundScene, camera);
-            renderer.render(scene, camera);
-            renderer.render(foregroundScene, camera);
+            renderer.render(backgroundScene, self.activeCamera);
+            renderer.render(scene, self.activeCamera);
+            // renderer.render(wireframeScene, camera);
 
             if (self.props.afterRender) self.props.afterRender();
         }
