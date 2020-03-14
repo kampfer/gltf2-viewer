@@ -89,9 +89,10 @@ export default class GltfRenderer extends React.Component {
             aspect = width / height,
             perspectiveCamera = new PerspectiveCamera(fovy, aspect, near, far),
             // frustumSize = length,
-            top = Math.tan(fovy / 2) * Math.abs(box._max.x - center.x),
-            right = top / aspect,
-            orthographicCamera = new OrthographicCamera(-right, right, top, top, near, far);
+            depthS = Math.tan(fovy / 2),
+            sizeY = depthS * Math.abs(center.z) * 2,
+            sizeX = sizeY * aspect,
+            orthographicCamera = new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far);
 
         [perspectiveCamera, orthographicCamera].forEach((camera) => {
             camera.position.copy(center);
