@@ -88,8 +88,10 @@ export default class GltfRenderer extends React.Component {
             fovy = mathUtils.degToRad(90),
             aspect = width / height,
             perspectiveCamera = new PerspectiveCamera(fovy, aspect, near, far),
-            frustumSize = length,
-            orthographicCamera = new OrthographicCamera(-frustumSize * aspect / 2, frustumSize * aspect / 2, frustumSize / 2, -frustumSize / 2, near, far);
+            // frustumSize = length,
+            top = Math.tan(fovy / 2) * Math.abs(box._max.x - center.x),
+            right = top / aspect,
+            orthographicCamera = new OrthographicCamera(-right, right, top, top, near, far);
 
         [perspectiveCamera, orthographicCamera].forEach((camera) => {
             camera.position.copy(center);
@@ -98,26 +100,41 @@ export default class GltfRenderer extends React.Component {
             camera.updateWorldMatrix();
         });
 
+        let activeCamera, cameraController;
+
         this.setActiveCamera = function (type) {
-            let oldActiveCamera = this.activeCamera;
+            let oldActiveCamera = activeCamera,
+                oldCameraController = cameraController,
+                target;
 
             if (oldActiveCamera && oldActiveCamera.type === type) return;
 
+            if (oldCameraController) {
+                target = oldCameraController.target;
+            } else {
+                target = center;
+            }
+
             if (type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
-                this.activeCamera = perspectiveCamera;
+                activeCamera = perspectiveCamera;
             } else if (type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-                this.activeCamera = orthographicCamera;
+                activeCamera = orthographicCamera;
             }
 
             if (oldActiveCamera) {
-                this.activeCamera.applyMatrix(oldActiveCamera.matrix);
+                activeCamera.position.copy(oldActiveCamera.position);
+                activeCamera.quaternion.copy(oldActiveCamera.quaternion);
+                activeCamera.scale.copy(oldActiveCamera.scale);
+                activeCamera.lookAt(target);
+                activeCamera.updateWorldMatrix();
             }
 
-            if (this.cameraController) {
-                this.cameraController.destroy();
+            // controller绑定了事件，必须destroy
+            if (oldCameraController) {
+                oldCameraController.destroy();
             }
-            this.cameraController = new OrbitController(this.activeCamera, this.webglRenderer.domElement);
-            this.cameraController.target = center;
+            cameraController = new OrbitController(activeCamera, this.webglRenderer.domElement);
+            cameraController.target = target;
         };
 
         this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
@@ -188,8 +205,8 @@ export default class GltfRenderer extends React.Component {
             //     selectedNode.visible = false;
             // }
 
-            renderer.render(backgroundScene, self.activeCamera);
-            renderer.render(scene, self.activeCamera);
+            renderer.render(backgroundScene, activeCamera);
+            renderer.render(scene, activeCamera);
             // renderer.render(wireframeScene, camera);
 
             if (self.props.afterRender) self.props.afterRender();
