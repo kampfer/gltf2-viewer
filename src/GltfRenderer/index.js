@@ -88,9 +88,7 @@ export default class GltfRenderer extends React.Component {
             fovy = mathUtils.degToRad(90),
             aspect = width / height,
             perspectiveCamera = new PerspectiveCamera(fovy, aspect, near, far),
-            // frustumSize = length,
-            depthS = Math.tan(fovy / 2),
-            sizeY = depthS * Math.abs(center.z) * 2,
+            sizeY = Math.tan(fovy / 2) * length,
             sizeX = sizeY * aspect,
             orthographicCamera = new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far);
 
