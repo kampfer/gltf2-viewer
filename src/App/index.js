@@ -9,6 +9,8 @@ import TopBar from '../TopBar';
 import StatusBar from '../StatusBar';
 import ResizeHelper from '../ResizeHelper';
 import debounce from '../utils/debounce';
+import KeyBinder from '../KeyBinder';
+import CommandManager from '../commands/CommandManager';
 
 import './index.less';
 
@@ -43,6 +45,8 @@ export default class App extends React.Component {
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
+
+        this.commandManager = new CommandManager();
     }
 
     renderGltf(gltf) {
@@ -106,55 +110,58 @@ export default class App extends React.Component {
             selectedNode = state.selectedNode;
 
         return (
-            <GridContainer vertical>
-                <Grid>
-                    <TopBar openFile={() => this.gltfLoader.current.chooseGltf()}></TopBar>
-                </Grid>
-                <Grid flexGrow={1}>
-                    <GridContainer>
-                        <Grid width={state.sideBarWith}>
-                            <ResizeHelper resizeX onResize={this.changeSideBarWidth}>
-                                <GridContainer vertical>
-                                    <Grid>
-                                        <ResizeHelper resizeY onResize={this.changeNodeViewerHeight}>
-                                            <GltfNodeViewer height={state.nodeViewerHeight}
+            <KeyBinder commandManager={this.commandManager}>
+                <GridContainer vertical>
+                    <Grid>
+                        <TopBar openFile={() => this.gltfLoader.current.chooseGltf()}></TopBar>
+                    </Grid>
+                    <Grid flexGrow={1}>
+                        <GridContainer>
+                            <Grid width={state.sideBarWith}>
+                                <ResizeHelper resizeX onResize={this.changeSideBarWidth}>
+                                    <GridContainer vertical>
+                                        <Grid>
+                                            <ResizeHelper resizeY onResize={this.changeNodeViewerHeight}>
+                                                <GltfNodeViewer height={state.nodeViewerHeight}
+                                                    gltf={state.gltf}
+                                                    onSelectNode={this.setSelectedNode}
+                                                    selectedNode={selectedNode}
+                                                ></GltfNodeViewer>
+                                            </ResizeHelper>
+                                        </Grid>
+                                        <Grid flexGrow={1}>
+                                            <GltfNodePropertyViewer
                                                 gltf={state.gltf}
-                                                onSelectNode={this.setSelectedNode}
                                                 selectedNode={selectedNode}
-                                            ></GltfNodeViewer>
-                                        </ResizeHelper>
-                                    </Grid>
-                                    <Grid flexGrow={1}>
-                                        <GltfNodePropertyViewer
-                                            gltf={state.gltf}
-                                            selectedNode={selectedNode}
-                                            height={window.innerHeight - state.nodeViewerHeight - 30 - 20 - 3 * 2}
-                                        ></GltfNodePropertyViewer>
-                                    </Grid>
-                                </GridContainer>
-                            </ResizeHelper>
-                        </Grid>
-                        <Grid flexGrow={1}>
-                            <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
-                                <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
-                                <GltfLoader ref={this.gltfLoader} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
-                                <GltfRenderer
-                                    gltf={state.gltf}
-                                    selectedNode={state.selectedNode}
-                                    hide={this.state.hideGltfRenderer}
-                                    beforeRender={() => this.stats.current.begin()}
-                                    afterRender={() => this.stats.current.end()}
-                                    width={state.rendererWidth}
-                                    height={state.rendererHeight}
-                                />
-                            </div>
-                        </Grid>
-                    </GridContainer>
-                </Grid>
-                <Grid>
-                    <StatusBar gltf={gltf}></StatusBar>
-                </Grid>
-            </GridContainer>
+                                                height={window.innerHeight - state.nodeViewerHeight - 30 - 20 - 3 * 2}
+                                            ></GltfNodePropertyViewer>
+                                        </Grid>
+                                    </GridContainer>
+                                </ResizeHelper>
+                            </Grid>
+                            <Grid flexGrow={1}>
+                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
+                                    <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
+                                    <GltfLoader ref={this.gltfLoader} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
+                                    <GltfRenderer
+                                        commandManager={this.commandManager}
+                                        gltf={state.gltf}
+                                        selectedNode={state.selectedNode}
+                                        hide={this.state.hideGltfRenderer}
+                                        beforeRender={() => this.stats.current.begin()}
+                                        afterRender={() => this.stats.current.end()}
+                                        width={state.rendererWidth}
+                                        height={state.rendererHeight}
+                                    />
+                                </div>
+                            </Grid>
+                        </GridContainer>
+                    </Grid>
+                    <Grid>
+                        <StatusBar gltf={gltf}></StatusBar>
+                    </Grid>
+                </GridContainer>
+            </KeyBinder>
         );
 
     }

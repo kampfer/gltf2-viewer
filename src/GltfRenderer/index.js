@@ -22,6 +22,7 @@ import './index.less';
 export default class GltfRenderer extends React.Component {
 
     constructor(props) {
+
         super(props);
 
         this.state = {
@@ -31,31 +32,18 @@ export default class GltfRenderer extends React.Component {
         this.webglCanvas = React.createRef();
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
-    }
+        this.setActiveCamera = this.setActiveCamera.bind(this);
 
-    componentDidMount() {
-        window.addEventListener('keypress', this.handleKeyPress, false);
+        this.activeCamera = null;
 
-        let canvas = this.webglCanvas.current;
-        this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
-        this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
-        this.startRenderLater();
-    }
+        this.cameraController = null;
 
-    componentWillUnmount() {
-        window.removeEventListener('keypress', this.handleKeyPress);
+        this.mixer = null;
 
-        this.webglRenderer.destroy();
-    }
+        this.commandManager = props.commandManager;
 
-    componentDidUpdate(prevProps) {
-        let props = this.props;
+        this.commandManager.registerCommand('renderer.setActiveCamera', this.setActiveCamera);
 
-        if (prevProps.gltf !== props.gltf ||
-            prevProps.width !== props.width ||
-            prevProps.height !== props.height) {
-            this.startRenderLater();
-        }
     }
 
     handleKeyPress(e) {
@@ -64,6 +52,75 @@ export default class GltfRenderer extends React.Component {
         } else if (e.keyCode === 111) { // o
             this.setActiveCamera(constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA);
         }
+    }
+
+    setActiveCamera(type) {
+        let gltf = this.props.gltf,
+            oldActiveCamera = this.activeCamera,
+            oldCameraController = this.cameraController,
+            activeCamera,
+            target;
+
+        if (!gltf) return;
+
+        if (oldActiveCamera && oldActiveCamera.type === type) return;
+
+        let scene = gltf.scenes[gltf.scene],
+            box = new Box3(),
+            size = box.setFromObject(scene).getSize(),
+            center = box.getCenter(),
+            length = size.length(),
+            canvas = this.webglCanvas.current,
+            width = canvas.width,
+            height = canvas.height,
+            near = 0.1,
+            far = length * 100,
+            fovy = mathUtils.degToRad(90),
+            aspect = width / height;
+
+        if (type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+            activeCamera = new PerspectiveCamera(fovy, aspect, near, far);
+        } else if (type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
+            let sizeY = Math.tan(fovy / 2) * length,
+                sizeX = sizeY * aspect;
+            activeCamera = new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far);
+        }
+
+        if (oldCameraController) {
+            target = oldCameraController.target;
+        } else {
+            target = center;
+        }
+
+        if (oldActiveCamera) {
+            activeCamera.position.copy(oldActiveCamera.position);
+            activeCamera.quaternion.copy(oldActiveCamera.quaternion);
+            activeCamera.scale.copy(oldActiveCamera.scale);
+            activeCamera.lookAt(target);
+            activeCamera.updateWorldMatrix();
+        } else {
+            activeCamera.position.copy(center);
+            activeCamera.position.z += length;
+            activeCamera.lookAt(center);
+            activeCamera.updateWorldMatrix();
+        }
+
+        this.activeCamera = activeCamera;
+
+        // controller绑定了事件，必须destroy
+        if (oldCameraController) {
+            oldCameraController.destroy();
+        }
+        this.cameraController = new OrbitController(activeCamera, this.webglRenderer.domElement);
+        this.cameraController.target = target;
+
+        return {
+            activeCamera,
+            box,
+            size,
+            center,
+            length,
+        };
     }
 
     stopRender() {
@@ -76,67 +133,7 @@ export default class GltfRenderer extends React.Component {
         let scene = gltf.scenes[gltf.scene],
             renderer = this.webglRenderer,
             self = this,
-            box = new Box3(),
-            size = box.setFromObject(scene).getSize(),
-            center = box.getCenter(),
-            length = size.length(),
-            canvas = this.webglCanvas.current,
-            width = canvas.parentNode.offsetWidth,
-            height = canvas.parentNode.offsetHeight,
-            near = 0.1,
-            far = length * 100,
-            fovy = mathUtils.degToRad(90),
-            aspect = width / height,
-            perspectiveCamera = new PerspectiveCamera(fovy, aspect, near, far),
-            sizeY = Math.tan(fovy / 2) * length,
-            sizeX = sizeY * aspect,
-            orthographicCamera = new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far);
-
-        [perspectiveCamera, orthographicCamera].forEach((camera) => {
-            camera.position.copy(center);
-            camera.position.z += length;
-            camera.lookAt(center);
-            camera.updateWorldMatrix();
-        });
-
-        let activeCamera, cameraController;
-
-        this.setActiveCamera = function (type) {
-            let oldActiveCamera = activeCamera,
-                oldCameraController = cameraController,
-                target;
-
-            if (oldActiveCamera && oldActiveCamera.type === type) return;
-
-            if (oldCameraController) {
-                target = oldCameraController.target;
-            } else {
-                target = center;
-            }
-
-            if (type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
-                activeCamera = perspectiveCamera;
-            } else if (type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-                activeCamera = orthographicCamera;
-            }
-
-            if (oldActiveCamera) {
-                activeCamera.position.copy(oldActiveCamera.position);
-                activeCamera.quaternion.copy(oldActiveCamera.quaternion);
-                activeCamera.scale.copy(oldActiveCamera.scale);
-                activeCamera.lookAt(target);
-                activeCamera.updateWorldMatrix();
-            }
-
-            // controller绑定了事件，必须destroy
-            if (oldCameraController) {
-                oldCameraController.destroy();
-            }
-            cameraController = new OrbitController(activeCamera, this.webglRenderer.domElement);
-            cameraController.target = target;
-        };
-
-        this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
+            { length, size } = this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
 
         if (this.mixer) {
             this.mixer.destroy();
@@ -204,8 +201,8 @@ export default class GltfRenderer extends React.Component {
             //     selectedNode.visible = false;
             // }
 
-            renderer.render(backgroundScene, activeCamera);
-            renderer.render(scene, activeCamera);
+            renderer.render(backgroundScene, self.activeCamera);
+            renderer.render(scene, self.activeCamera);
             // renderer.render(wireframeScene, camera);
 
             if (self.props.afterRender) self.props.afterRender();
@@ -225,6 +222,33 @@ export default class GltfRenderer extends React.Component {
                 this.renderGltf(gltf);
             }
         }, 100);
+    }
+
+    componentDidMount() {
+        window.addEventListener('keypress', this.handleKeyPress, false);
+
+        let canvas = this.webglCanvas.current;
+        this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
+        this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
+        this.startRenderLater();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keypress', this.handleKeyPress);
+
+        this.webglRenderer.destroy();
+        this.cameraController.destroy();
+        this.commandManager.unregisterCommand('renderer.setActiveCamera');
+    }
+
+    componentDidUpdate(prevProps) {
+        let props = this.props;
+
+        if (prevProps.gltf !== props.gltf ||
+            prevProps.width !== props.width ||
+            prevProps.height !== props.height) {
+            this.startRenderLater();
+        }
     }
 
     render() {
