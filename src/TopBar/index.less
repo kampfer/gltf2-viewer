@@ -3,22 +3,23 @@
     height: 30px;
     line-height: 30px;
     overflow: hidden;
+    font-size: 13px;
+    display: flex;
 
     .logo {
-        float: left;
         padding: 5px 5px 0 5px;
     }
 
-    .menu {
+    .menu-wrappers {
 
-        float: left;
+        display: flex;
 
-        .menu-button {
+        .menu-wrapper {
             padding: 0 8px;
             cursor: default;
         }
 
-        .menu-button:hover {
+        .menu-wrapper:hover .menu-name {
             background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
@@ -26,9 +27,10 @@
     }
 
     .app-title {
+        flex: 1;
         font-weight: normal;
-        font-size: 12px;
         text-align: center;
+        font-size: 12px;
     }
 
 }
