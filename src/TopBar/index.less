@@ -19,9 +19,12 @@
             cursor: default;
         }
 
-        .menu-wrapper:hover .menu-name {
+        .menu-wrapper:hover,
+        .menu-wrapper.selected  {
             background-color: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            .menu-name {
+                color: #fff;
+            }
         }
 
     }

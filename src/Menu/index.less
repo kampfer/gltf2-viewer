@@ -4,20 +4,61 @@
     z-index: 9;
     background-color: #252526;
     width: 260px;
-    padding: 0 11px;
-    box-sizing: border-box;
 
     .menu-item {
 
-        height: 28px;
-        line-height: 28px;
+        
+        padding: 0 10px;
+        margin: 5px 0;
 
-        .short-cut {
+        .command {
 
-            float: right;
+            padding: 2px 15px;
+            display: flex;
+
+            .command-name {
+
+                margin-left: 5px;
+                height: 20px;
+                line-height: 20px;
+                display: inline-block;
+                max-width: 50%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: normal;
+                word-break: keep-all;
+
+            }
+
+            .command-short-cut {
+
+                height: 20px;
+                line-height: 20px;
+                flex: 1;
+                text-align: right;
+
+            }
+
+            &.checked {
+
+                padding-left: 0px;
+
+            }
 
         }
 
+        &:hover {
+            background-color: #094771;
+            color: #fff;
+        }
+
+    }
+
+    .menu-separator {
+        // border: 1px solid #616162;
+        background-color: #616162;
+        height: 1px;
+        margin: 0 10px;
     }
 
 }
