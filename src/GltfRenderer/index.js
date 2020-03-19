@@ -33,6 +33,7 @@ export default class GltfRenderer extends React.Component {
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.setActiveCamera = this.setActiveCamera.bind(this);
+        this.getActiveCamera = this.getActiveCamera.bind(this);
 
         this.activeCamera = null;
 
@@ -43,6 +44,7 @@ export default class GltfRenderer extends React.Component {
         this.commandManager = props.commandManager;
 
         this.commandManager.registerCommand('renderer.setActiveCamera', this.setActiveCamera);
+        this.commandManager.registerCommand('renderer.getActiveCameraType', this.getActiveCamera)
 
     }
 
@@ -52,6 +54,10 @@ export default class GltfRenderer extends React.Component {
         } else if (e.keyCode === 111) { // o
             this.setActiveCamera(constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA);
         }
+    }
+
+    getActiveCamera() {
+        return this.activeCamera && this.activeCamera.type;
     }
 
     setActiveCamera(type) {

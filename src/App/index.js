@@ -113,7 +113,7 @@ export default class App extends React.Component {
             <KeyBinder commandManager={this.commandManager}>
                 <GridContainer vertical>
                     <Grid>
-                        <TopBar openFile={() => this.gltfLoader.current.chooseGltf()}></TopBar>
+                        <TopBar commandManager={this.commandManager} ></TopBar>
                     </Grid>
                     <Grid flexGrow={1}>
                         <GridContainer>
