@@ -113,7 +113,20 @@ export default class GltfRenderer extends React.Component {
     }
 
     setViewType(type) {
-        this.props.onsetViewType(type);
+
+        let gltf = this.props.gltf,
+            scene = gltf.scenes[gltf.scene];
+
+        scene.traverse(function (child) {
+            if (child.material) {
+                if (type === 'mesh') {
+                    child.material.wireframe = false;
+                } else if (type === 'wireframe') {
+                    child.material.wireframe = true;
+                }
+            }
+        });
+
     }
 
     stopRender() {
@@ -123,10 +136,13 @@ export default class GltfRenderer extends React.Component {
     renderGltf(gltf, cameraType) {
         console.log('gltf:', gltf);
 
-        let scene = gltf.scenes[gltf.scene],
+        let props = this.props,
+            scene = gltf.scenes[gltf.scene],
             renderer = this.webglRenderer,
             self = this,
             { length, size } = this.setActiveCameraType(cameraType);
+
+        this.setViewType(props.viewType);
 
         if (this.mixer) {
             this.mixer.destroy();
@@ -146,27 +162,6 @@ export default class GltfRenderer extends React.Component {
             gridHelper = new GridHelper(length * 15, 20, '#ccc');
         backgroundScene.add(gridHelper);
 
-        // 加上之后内存爆炸！首屏时间也明显增长！
-        // let wireframeScene = new Scene(),
-        //     wireframeMaterial = new LineBasicMaterial({color: '#eee'});
-        // wireframeScene.visible = false;
-        // wireframeScene.copy(scene, false);
-        // scene.traverse(function (child) {
-        //     if (child.geometry) {
-        //         let wireframe = new LineSegments(
-        //             new WireframeGeometry(child.geometry),
-        //             wireframeMaterial
-        //         );
-        //         wireframe.matrix.copy(child.matrix);
-        //         wireframe.position.copy(child.position);
-        //         wireframe.quaternion.copy(child.quaternion);
-        //         wireframe.scale.copy(child.scale);
-        //         wireframeScene.add(wireframe);
-        //     } else {
-        //         wireframeScene.add(child.clone());
-        //     }
-        // });
-
         let clock = new Clock();
 
         function animate() {
@@ -177,22 +172,6 @@ export default class GltfRenderer extends React.Component {
             renderer.clear();
 
             self.mixer.update(clock.getDeltaTime());
-
-            // 不再隐藏上一次选中的对象
-            // if (selectedNode) selectedNode.visible = true;
-            // selectedNode = scene.getChildByUid(self.props.selectedNode);
-            // if (selectedNode && selectedNode.geometry) {
-            //     let geometry = selectedNode.geometry,
-            //         wireframe = wireframeGeometries.get(geometry);
-            //     if (!wireframe) {
-            //         wireframe = new LineSegments(new WireframeGeometry(geometry), new LineBasicMaterial({color: 'black'}));
-            //         selectedNode.worldMatrix.decompose(wireframe.position, wireframe.quaternion, wireframe.scale);
-            //         wireframeGeometries.set(geometry, wireframe);
-            //     }
-            //     foregroundScene.add(wireframe);
-            //     // 隐藏选中的对象，只显示其网格
-            //     selectedNode.visible = false;
-            // }
 
             renderer.render(backgroundScene, self.activeCamera);
             renderer.render(scene, self.activeCamera);

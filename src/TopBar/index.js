@@ -60,16 +60,20 @@ export default function TopBar(props) {
                         key: 'setMeshView',
                         text: 'Mesh视图',
                         secondaryText: 'M',
-                        onClick: function () {},
+                        onClick: function () {
+                            commandManager.executeCommand('renderer.setViewType', 'mesh');
+                        },
                         canCheck: true,
-                        isChecked: false,
+                        isChecked: props.viewType === 'mesh',
                     }, {
                         key: 'setWireframeView',
                         text: 'Wireframe视图',
                         secondaryText: 'W',
-                        onClick: function () {},
+                        onClick: function () {
+                            commandManager.executeCommand('renderer.setViewType', 'wireframe');
+                        },
                         canCheck: true,
-                        isChecked: false,
+                        isChecked: props.viewType === 'wireframe',
                     }
                 ]
             }

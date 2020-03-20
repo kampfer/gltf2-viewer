@@ -30,7 +30,7 @@ export default class App extends React.Component {
             gltf: null,
             selectedNode: undefined,
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
-            viewType: null,
+            viewType: 'mesh',
             hideFileReader: false,
             sideBarWith: sideBarWith,
             nodeViewerHeight: nodeViewerHeight,
@@ -128,6 +128,7 @@ export default class App extends React.Component {
         window.addEventListener('resize', this.handleWinResize);
 
         commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
+        commandManager.registerCommand('renderer.setViewType', this.setViewType);
         commandManager.registerCommand('open', this.open);
     }
 
@@ -135,6 +136,7 @@ export default class App extends React.Component {
         window.removeEventListener('resize', this.handleWinResize);
 
         commandManager.unregisterCommand('renderer.setActiveCameraType');
+        commandManager.unregisterCommand('renderer.setViewType');
         commandManager.unregisterCommand('open');
     }
 
