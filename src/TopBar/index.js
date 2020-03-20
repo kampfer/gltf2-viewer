@@ -21,7 +21,7 @@ export default function TopBar(props) {
                         text: '打开Gltf/Glb文件',
                         secondaryText: 'Ctrl+O',
                         onClick: function () {
-                            // onToggleSelect();
+                            commandManager.executeCommand('open');
                         },
                         canCheck: false,
                     }, {
@@ -29,7 +29,7 @@ export default function TopBar(props) {
                         text: '打开远程Gltf/Glb文件',
                         secondaryText: 'Ctrl+Shift+O',
                         onClick: function () {
-                            // onToggleSelect();
+                            commandManager.executeCommand('open');
                         },
                         canCheck: false,
                     }, {

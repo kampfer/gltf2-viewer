@@ -48,9 +48,10 @@ export default class App extends React.Component {
         this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
         this.setViewType = this.setViewType.bind(this);
         this.setActiveCameraType = this.setActiveCameraType.bind(this);
+        this.open = this.open.bind(this);
 
         this.stats = React.createRef();
-        this.gltfLoader = React.createRef();
+        this.gltfLoaderRef = React.createRef();
         this.rendererRef = React.createRef();
     }
 
@@ -91,6 +92,13 @@ export default class App extends React.Component {
         }
     }
 
+    open() {
+        let gltfLoader = this.gltfLoaderRef.current;
+        if (gltfLoader) {
+            gltfLoader.chooseGltf();
+        }
+    }
+
     setSelectedNode(uid) {
         this.setState({selectedNode: uid});
     }
@@ -120,12 +128,14 @@ export default class App extends React.Component {
         window.addEventListener('resize', this.handleWinResize);
 
         commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
+        commandManager.registerCommand('open', this.open);
     }
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleWinResize);
 
         commandManager.unregisterCommand('renderer.setActiveCameraType');
+        commandManager.unregisterCommand('open');
     }
 
     render() {
@@ -167,7 +177,7 @@ export default class App extends React.Component {
                             <Grid flexGrow={1}>
                                 <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop}>
                                     <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
-                                    <GltfLoader ref={this.gltfLoader} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
+                                    <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer
                                         ref={this.rendererRef}
                                         gltf={state.gltf}
