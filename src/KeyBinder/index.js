@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { KeyCode, keyCodeToStr } from './keyCodes';
 import keyBindings from './keyBindings';
+import { commandManager } from '../commands';
 
 export default function KeyBinder (props) {
 
@@ -25,7 +26,7 @@ export default function KeyBinder (props) {
 
             if (keybinding.key === key) {
 
-                let command = props.commandManager.getCommand(keybinding.command),
+                let command = commandManager.getCommand(keybinding.command),
                     args = keybinding.args;
 
                 if (command) command(args);

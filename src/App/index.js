@@ -10,7 +10,8 @@ import StatusBar from '../StatusBar';
 import ResizeHelper from '../ResizeHelper';
 import debounce from '../utils/debounce';
 import KeyBinder from '../KeyBinder';
-import CommandManager from '../commands/CommandManager';
+import { commandManager } from '../commands';
+import { constants } from 'webglRenderEngine';
 
 import './index.less';
 
@@ -28,6 +29,8 @@ export default class App extends React.Component {
         this.state = {
             gltf: null,
             selectedNode: undefined,
+            activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
+            viewType: null,
             hideFileReader: false,
             sideBarWith: sideBarWith,
             nodeViewerHeight: nodeViewerHeight,
@@ -38,15 +41,17 @@ export default class App extends React.Component {
         this.renderGltf = this.renderGltf.bind(this);
         this.handleDragStart = this.handleDragStart.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
+        this.handleWinResize = debounce(this.handleWinResize, 100).bind(this);
+
         this.setSelectedNode = this.setSelectedNode.bind(this);
         this.changeNodeViewerHeight = this.changeNodeViewerHeight.bind(this);
         this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
-        this.handleWinResize = debounce(this.handleWinResize, 100).bind(this);
+        this.setViewType = this.setViewType.bind(this);
+        this.setActiveCameraType = this.setActiveCameraType.bind(this);
 
         this.stats = React.createRef();
         this.gltfLoader = React.createRef();
-
-        this.commandManager = new CommandManager();
+        this.rendererRef = React.createRef();
     }
 
     renderGltf(gltf) {
@@ -68,6 +73,22 @@ export default class App extends React.Component {
 
     handleDrop(e) {
         this.gltfLoader.current.handleDrop(e);
+    }
+
+    setViewType(type) {
+        let renderer = this.rendererRef.current;
+        if (renderer) {
+            renderer.setViewType(type);
+            this.setState({ viewType: type });
+        }
+    }
+
+    setActiveCameraType(type) {
+        let renderer = this.rendererRef.current;
+        if (renderer) {
+            renderer.setActiveCameraType(type);
+            this.setState({ activeCameraType: type });
+        }
     }
 
     setSelectedNode(uid) {
@@ -97,10 +118,14 @@ export default class App extends React.Component {
 
     componentDidMount() {
         window.addEventListener('resize', this.handleWinResize);
+
+        commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
     }
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleWinResize);
+
+        commandManager.unregisterCommand('renderer.setActiveCameraType');
     }
 
     render() {
@@ -110,10 +135,10 @@ export default class App extends React.Component {
             selectedNode = state.selectedNode;
 
         return (
-            <KeyBinder commandManager={this.commandManager}>
+            <KeyBinder>
                 <GridContainer vertical>
                     <Grid>
-                        <TopBar commandManager={this.commandManager} ></TopBar>
+                        <TopBar activeCameraType={state.activeCameraType} viewType={state.viewType}></TopBar>
                     </Grid>
                     <Grid flexGrow={1}>
                         <GridContainer>
@@ -140,11 +165,11 @@ export default class App extends React.Component {
                                 </ResizeHelper>
                             </Grid>
                             <Grid flexGrow={1}>
-                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDragOver={this.handleDragStart} onDrop={this.handleDrop}>
+                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop}>
                                     <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
                                     <GltfLoader ref={this.gltfLoader} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer
-                                        commandManager={this.commandManager}
+                                        ref={this.rendererRef}
                                         gltf={state.gltf}
                                         selectedNode={state.selectedNode}
                                         hide={this.state.hideGltfRenderer}
@@ -152,6 +177,8 @@ export default class App extends React.Component {
                                         afterRender={() => this.stats.current.end()}
                                         width={state.rendererWidth}
                                         height={state.rendererHeight}
+                                        activeCameraType={state.activeCameraType}
+                                        viewType={state.viewType}
                                     />
                                 </div>
                             </Grid>

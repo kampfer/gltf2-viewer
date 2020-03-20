@@ -31,36 +31,19 @@ export default class GltfRenderer extends React.Component {
 
         this.webglCanvas = React.createRef();
 
-        this.handleKeyPress = this.handleKeyPress.bind(this);
-        this.setActiveCamera = this.setActiveCamera.bind(this);
-        this.getActiveCamera = this.getActiveCamera.bind(this);
-
         this.activeCamera = null;
 
         this.cameraController = null;
 
         this.mixer = null;
 
-        this.commandManager = props.commandManager;
-
-        this.commandManager.registerCommand('renderer.setActiveCamera', this.setActiveCamera);
-        this.commandManager.registerCommand('renderer.getActiveCameraType', this.getActiveCamera)
-
-    }
-
-    handleKeyPress(e) {
-        if (e.keyCode === 112) {    // p
-            this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
-        } else if (e.keyCode === 111) { // o
-            this.setActiveCamera(constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA);
-        }
     }
 
     getActiveCamera() {
         return this.activeCamera && this.activeCamera.type;
     }
 
-    setActiveCamera(type) {
+    setActiveCameraType(type) {
         let gltf = this.props.gltf,
             oldActiveCamera = this.activeCamera,
             oldCameraController = this.cameraController,
@@ -129,17 +112,21 @@ export default class GltfRenderer extends React.Component {
         };
     }
 
+    setViewType(type) {
+        this.props.onsetViewType(type);
+    }
+
     stopRender() {
         cancelAnimationFrame(this._animationTimer);
     }
 
-    renderGltf(gltf) {
+    renderGltf(gltf, cameraType) {
         console.log('gltf:', gltf);
 
         let scene = gltf.scenes[gltf.scene],
             renderer = this.webglRenderer,
             self = this,
-            { length, size } = this.setActiveCamera(constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
+            { length, size } = this.setActiveCameraType(cameraType);
 
         if (this.mixer) {
             this.mixer.destroy();
@@ -225,14 +212,12 @@ export default class GltfRenderer extends React.Component {
             if (gltf) {
                 this.stopRender();
                 this.webglRenderer.setViewport(0, 0, props.width, props.height);
-                this.renderGltf(gltf);
+                this.renderGltf(gltf, props.activeCameraType);
             }
         }, 100);
     }
 
     componentDidMount() {
-        window.addEventListener('keypress', this.handleKeyPress, false);
-
         let canvas = this.webglCanvas.current;
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
         this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
@@ -240,11 +225,8 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentWillUnmount() {
-        window.removeEventListener('keypress', this.handleKeyPress);
-
         this.webglRenderer.destroy();
         this.cameraController.destroy();
-        this.commandManager.unregisterCommand('renderer.setActiveCamera');
     }
 
     componentDidUpdate(prevProps) {

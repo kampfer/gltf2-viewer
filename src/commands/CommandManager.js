@@ -4,16 +4,21 @@ export default class CommandManager {
         this._commands = {};
     }
 
-    getCommand(name) {
-        return this._commands[name];
+    getCommand(id) {
+        return this._commands[id];
     }
 
-    registerCommand(name, handle) {
-        this._commands[name] = handle;
+    registerCommand(id, handle) {
+        this._commands[id] = handle;
     }
 
-    unregisterCommand(name) {
-        delete this._commands[name];
+    unregisterCommand(id) {
+        delete this._commands[id];
+    }
+
+    executeCommand(id, ...args) {
+        let command = this.getCommand(id);
+        return command && command(...args);
     }
 
     destory() {

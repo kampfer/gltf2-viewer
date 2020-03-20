@@ -1,24 +1,14 @@
 import React from 'react';
 import CommandBar from '../ui/CommandBar';
 import { MenuItemType } from '../ui/Menu';
+import { commandManager } from '../commands';
+import { constants } from 'webglRenderEngine';
 
 import './index.less';
 
 import logoImg from './logo.png';
 
-export default function TopBar() {
-
-    const [selection, setSelection] = React.useState({});
-
-    const onToggleSelect = React.useCallback(
-        (e, item) => {
-            e.preventDefault();
-            if (item) {
-                setSelection({ ...selection, [item.key]: selection[item.key] === undefined ? true : !selection[item.key] });
-            }
-        },
-        [selection]
-    );
+export default function TopBar(props) {
 
     const items = [
         {
@@ -30,16 +20,18 @@ export default function TopBar() {
                         key: 'openLocalGLTF',
                         text: '打开Gltf/Glb文件',
                         secondaryText: 'Ctrl+O',
-                        onClick: onToggleSelect,
+                        onClick: function () {
+                            // onToggleSelect();
+                        },
                         canCheck: false,
-                        isChecked: selection.openLocalGLTF,
                     }, {
                         key: 'openRemoteGLTF',
                         text: '打开远程Gltf/Glb文件',
                         secondaryText: 'Ctrl+Shift+O',
-                        onClick: onToggleSelect,
+                        onClick: function () {
+                            // onToggleSelect();
+                        },
                         canCheck: false,
-                        isChecked: selection.openRemoteGLTF,
                     }, {
                         key: 'separator_1',
                         itemType: MenuItemType.separator
@@ -47,16 +39,20 @@ export default function TopBar() {
                         key: 'setPerspectiveCamera',
                         text: 'Perspective相机',
                         secondaryText: 'P',
-                        onClick: onToggleSelect,
+                        onClick: function() {
+                            commandManager.executeCommand('renderer.setActiveCameraType', constants.OBJECT_TYPE_PERSPECTIVE_CAMERA);
+                        },
                         canCheck: true,
-                        isChecked: selection.setPerspectiveCamera,
+                        isChecked: props.activeCameraType === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
                     }, {
                         key: 'setOrthographicCamera',
                         text: 'Orthographic相机',
                         secondaryText: 'O',
-                        onClick: onToggleSelect,
+                        onClick: function() {
+                            commandManager.executeCommand('renderer.setActiveCameraType', constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA);
+                        },
                         canCheck: true,
-                        isChecked: selection.setOrthographicCamera,
+                        isChecked: props.activeCameraType === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
                     }, {
                         key: 'separator_2',
                         itemType: MenuItemType.separator
@@ -64,16 +60,16 @@ export default function TopBar() {
                         key: 'setMeshView',
                         text: 'Mesh视图',
                         secondaryText: 'M',
-                        onClick: onToggleSelect,
+                        onClick: function () {},
                         canCheck: true,
-                        isChecked: selection.setMeshView,
+                        isChecked: false,
                     }, {
                         key: 'setWireframeView',
                         text: 'Wireframe视图',
                         secondaryText: 'W',
-                        onClick: onToggleSelect,
+                        onClick: function () {},
                         canCheck: true,
-                        isChecked: selection.setWireframeView,
+                        isChecked: false,
                     }
                 ]
             }
