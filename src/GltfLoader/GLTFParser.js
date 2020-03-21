@@ -138,10 +138,19 @@ export default class GLTFParser {
         return parsePromise;
     }
 
+    parse(data) {
+        if (data instanceof ArrayBuffer) {
+            return this.parseArrayBuffer(data);
+        } else {
+            return this.parseJson(data);
+        }
+    }
+
     parseArrayBuffer(data) {
         let reader = new GLTFBinaryReader(data),
             content = reader.content;
 
+        console.log('glTF Data:', data);
         data = JSON.parse(content);
 
         // parse buffer时需要使用reader.body
@@ -166,6 +175,7 @@ export default class GLTFParser {
     }
 
     parseJson(data) {
+        console.log('glTF Data:', data);
         // 重置所有属性（主要是缓存，以及gltf数据）
         this.reset(data, DATA_TYPE.GLTF);
 

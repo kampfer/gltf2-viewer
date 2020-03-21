@@ -1,20 +1,49 @@
 import path from 'path';
 
+// path.isAbsolutePath有bug，自己显示一个
 function isAbsolutePath(url) {
     return /^https?:\/\//.test(url) || url.charAt(0) === '/';
 }
 
-export default class GLTFLoader {
+// const MIME_TYPES = {
+//     json: 'application/json',
+//     gltf: 'model/gltf+json',
+//     glb: 'model/gltf-binary',
+//     bin: 'application/octet-stream',
+// };
+
+const jsonFormater = function(res) {
+    return res.json();
+};
+
+const arrayBufferFormater = function(res) {
+    return res.arrayBuffer();
+}
+
+const responseFormaters = {
+    gltf: jsonFormater,
+    glb: arrayBufferFormater,
+    bin: arrayBufferFormater
+};
+
+export default class FileLoader {
 
     constructor({
-        baseUrl
+        baseUrl,
+        urlModifier
     } = {}) {
         this.baseUrl = baseUrl;
+        this.urlModifier = urlModifier;
         this._requstingPool = {};
     }
 
-    setURLModifier(modifier) {
-        this._urlModifier = modifier;
+    extname(url) {
+        return path.extname(url).slice(1);
+    }
+
+    formatResponse(res, url) {
+        let extname = this.extname(url);
+        return responseFormaters[extname](res);
     }
 
     // 本地文件的路径格式： filename.gltf
@@ -29,18 +58,19 @@ export default class GLTFLoader {
         }
 
         let modifiedUrl = url;
-        if (this._urlModifier) {
-            modifiedUrl = this._urlModifier(url);
+        if (this.urlModifier) {
+            modifiedUrl = this.urlModifier.call(this, url);
         }
 
         console.log(`request: ${url}(${modifiedUrl})`);
-        let p = fetch(modifiedUrl).then(function (res) {
-            if (res.ok) {
-                return res;
-            } else {
-                throw('Network response was not ok.');
-            }
-        });
+        let p = fetch(modifiedUrl)
+            .then((res) => {
+                if (res.ok) {
+                    return this.formatResponse(res, url);
+                } else {
+                    throw('Network response was not ok.');
+                }
+            });
 
         this._requstingPool[url] = p;
 

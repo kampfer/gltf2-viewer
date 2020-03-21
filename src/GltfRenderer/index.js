@@ -36,14 +36,21 @@ export default class GltfRenderer extends React.Component {
 
     }
 
-    getActiveCamera() {
-        return this.activeCamera && this.activeCamera.type;
+    getSceneBox() {
+        let gltf = this.props.gltf,
+            scene = gltf.scenes[gltf.scene],
+            box = new Box3();
+        return box.setFromObject(scene);
     }
 
     setActiveCameraType(type) {
         let gltf = this.props.gltf,
             oldActiveCamera = this.activeCamera,
             oldCameraController = this.cameraController,
+            box = this.getSceneBox(),
+            size =box.getSize(),
+            center = box.getCenter(),
+            length = size.length(),
             activeCamera,
             target;
 
@@ -51,12 +58,7 @@ export default class GltfRenderer extends React.Component {
 
         if (oldActiveCamera && oldActiveCamera.type === type) return;
 
-        let scene = gltf.scenes[gltf.scene],
-            box = new Box3(),
-            size = box.setFromObject(scene).getSize(),
-            center = box.getCenter(),
-            length = size.length(),
-            canvas = this.webglCanvas.current,
+        let canvas = this.webglCanvas.current,
             width = canvas.width,
             height = canvas.height,
             near = 0.1,
@@ -100,13 +102,7 @@ export default class GltfRenderer extends React.Component {
         this.cameraController = new OrbitController(activeCamera, this.webglRenderer.domElement);
         this.cameraController.target = target;
 
-        return {
-            activeCamera,
-            box,
-            size,
-            center,
-            length,
-        };
+        return activeCamera;
     }
 
     setViewType(type) {
@@ -136,8 +132,11 @@ export default class GltfRenderer extends React.Component {
         let props = this.props,
             scene = gltf.scenes[gltf.scene],
             renderer = this.webglRenderer,
-            self = this,
-            { length, size } = this.setActiveCameraType(cameraType);
+            box = this.getSceneBox(),
+            size = box.getSize(),
+            length = size.length();
+
+        this.setActiveCameraType(cameraType)
 
         this.setViewType(props.viewType);
 
@@ -161,20 +160,20 @@ export default class GltfRenderer extends React.Component {
 
         let clock = new Clock();
 
-        function animate() {
-            self._animationTimer = requestAnimationFrame(animate);
+        const animate = () => {
+            this._animationTimer = requestAnimationFrame(animate);
 
-            if (self.props.beforeRender) self.props.beforeRender();
+            if (this.props.beforeRender) this.props.beforeRender();
 
             renderer.clear();
 
-            self.mixer.update(clock.getDeltaTime());
+            this.mixer.update(clock.getDeltaTime());
 
-            renderer.render(backgroundScene, self.activeCamera);
-            renderer.render(scene, self.activeCamera);
+            renderer.render(backgroundScene, this.activeCamera);
+            renderer.render(scene, this.activeCamera);
             // renderer.render(wireframeScene, camera);
 
-            if (self.props.afterRender) self.props.afterRender();
+            if (this.props.afterRender) this.props.afterRender();
         }
 
         animate();

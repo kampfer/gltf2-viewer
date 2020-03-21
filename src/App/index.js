@@ -96,7 +96,7 @@ export default class App extends React.Component {
     open() {
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
-            gltfLoader.chooseGltf();
+            gltfLoader.open().then(this.renderGltf);
         }
     }
 

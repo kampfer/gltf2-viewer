@@ -12,55 +12,7 @@ export default class FileReader extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.state = {
-            active: false,
-            successCallback: props.onSuccess
-        };
-
-        this.handleDragStart = this.handleDragStart.bind(this);
-        this.handleDragStop = this.handleDragStop.bind(this);
-        this.handleDrop = this.handleDrop.bind(this);
-        this.handleInputChnage = this.handleInputChnage.bind(this);
-
-        this.fileInput = React.createRef();
-    }
-
-    stopEvent(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    handleDragStart(e) {
-        this.stopEvent(e);
-        this.setState({ active: true });
-    }
-
-    // If you start off hovering directly over dropArea and then hover over one of its children,
-    // then dragleave will be fired and the highlight will be removed.
-    // 使用e.currentTarget可以保证处理的dom一定是form，但是渲染速度尽快依然会出去闪烁的现象
-    handleDragStop(e) {
-        this.stopEvent(e);
-        this.setState({ active: false });
-    }
-    
-    handleDrop(e) {
-        this.handleDragStop(e);
-
-        let callback = this.state.successCallback;
-        if (callback) {
-            this.loadGltfFromFiles(e.dataTransfer.files).then(callback);
-        }
-    }
-
-    handleInputChnage(e) {
-        this.stopEvent(e);
-
-        let files = e.currentTarget.files;
-        let callback = this.state.successCallback;
-        if (callback) {
-            this.loadGltfFromFiles(files).then(callback);
-        }
+        this.fileInputRef = React.createRef();
     }
 
     loadGltfFromFiles(files) {
@@ -68,7 +20,6 @@ export default class FileReader extends React.Component {
         if (files && files.length > 0) {
 
             let gltfFile,
-                gltfType,
                 fileMap = {};
 
             // e.dataTransfer.files是一个filelist不是数组，必须手动遍历。
@@ -81,7 +32,6 @@ export default class FileReader extends React.Component {
 
                 if (extname === 'gltf' || extname === 'glb') {
                     gltfFile = file;
-                    gltfType = extname;
                 }
 
             }
@@ -92,36 +42,21 @@ export default class FileReader extends React.Component {
                 return Promise.reject(msg);
             }
 
-            // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
-            let fileLoader = new FileLoader(),
+            let blobURLs = [],
+                // 每次gltf变化之后loader需要重置，清空缓存等状态。直接创建新的实例最方便。
+                fileLoader = new FileLoader({
+                    urlModifier: function (url) {
+                        if (url in fileMap) {
+                            let blobUrl = URL.createObjectURL(fileMap[url]);
+                            blobURLs.push(blobUrl);
+                            return blobUrl;
+                        }
+                        return url;
+                    }
+                }),
                 gltfParser = new GLTFParser({ loader: fileLoader });
 
-            let blobURLs = [];
-            fileLoader.setURLModifier(function (url) {
-                if (url in fileMap) {
-                    let blobUrl = URL.createObjectURL(fileMap[url]);
-                    blobURLs.push(blobUrl);
-                    return blobUrl;
-                }
-                return url;
-            });
-
-            let p = fileLoader.load(gltfFile.name)
-                .then(function (data) {
-                    if (gltfType === 'gltf') {
-                        return data.json();
-                    } else if (gltfType === 'glb') {
-                        return data.arrayBuffer();
-                    }
-                })
-                .then(function (data) {
-                     console.log('data:', data);
-                    if (gltfType === 'gltf') {
-                        return gltfParser.parseJson(data);
-                    } else if(gltfType === 'glb') {
-                        return gltfParser.parseArrayBuffer(data);
-                    }
-                });
+            let p = fileLoader.load(gltfFile.name).then((data) => gltfParser.parse(data));
 
             blobURLs.forEach(function (url) {
                 URL.revokeObjectURL(url);
@@ -131,10 +66,6 @@ export default class FileReader extends React.Component {
 
         }
 
-    }
-
-    chooseGltf() {
-        this.fileInput.current.click();
     }
 
     loadGltfFromUrl(url) {
@@ -149,23 +80,47 @@ export default class FileReader extends React.Component {
         let fileLoader = new FileLoader({baseUrl: path.dirname(url)}),
             gltfParser = new GLTFParser({loader: fileLoader});
 
-        return fileLoader.load(path.basename(url))
-            .then(function (data) {
-                if (extname === '.gltf') {
-                    return data.json();
-                } else if (extname === '.glb') {
-                    return data.arrayBuffer();
-                }
-            })
-            .then(function (data) {
-                    console.log('data:', data);
-                if (extname === '.gltf') {
-                    return gltfParser.parseJson(data);
-                } else if(extname === '.glb') {
-                    return gltfParser.parseArrayBuffer(data);
-                }
-            });
+        return fileLoader.load(path.basename(url)).then((data) => gltfParser.parse(data));
 
+    }
+
+    open() {
+
+        let fileInput = this.fileInputRef.current;
+
+        if (fileInput) {
+
+            fileInput.click();
+
+            return new Promise((resolve, reject) => {
+                this.onceFileInputChange(function (input) {
+                    resolve(input.files);
+                });
+                setTimeout(function () {
+                    reject('操作超时！');
+                }, 30 * 1000);
+            })
+            .then((files) => this.loadGltfFromFiles(files));
+
+        }
+        
+        return Promise.reject('File Input 未完成加载！');
+
+    }
+
+    openUrl() {
+        let url = prompt('请输入gltf或glb文件地址');
+        return this.loadGltfFromUrl(url);
+    }
+
+    onceFileInputChange(callback) {
+        let elem = this.fileInputRef.current;
+        if (elem) {
+            elem.addEventListener('change', function handleInputChnage() {
+                elem.removeEventListener('change', handleInputChnage);
+                callback(elem);
+            }, false);
+        }
     }
 
     componentDidMount() {
@@ -178,16 +133,9 @@ export default class FileReader extends React.Component {
     }
 
     render() {
-        let props = this.props;
+        let displayStyle = { display: 'none' };
         return (
-            <div className={`file-uploader ${props.hide ? 'hide' : ''}`}>
-                <svg className="file-uploader__icon" xmlns="http://www.w3.org/2000/svg" width="100" height="86" viewBox="0 0 50 43">
-                    <path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z" />
-                </svg>
-                <input className="file-uploader__file" type="file" id="file-uploader__file" ref={this.fileInput} multiple onChange={this.handleInputChnage} />
-                <label htmlFor="file-uploader__file"><strong>选择文件</strong><span className="box__dragndrop">或者将文件拖动到这里</span>.</label>
-                {props.children}
-            </div>
+            <input type="file" name="gltfFile" style={displayStyle} ref={this.fileInputRef} multiple />
         );
     }
 
