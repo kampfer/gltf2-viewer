@@ -138,13 +138,34 @@ export default class FileReader extends React.Component {
     }
 
     loadGltfFromUrl(url) {
+
+        let extname = path.extname(url).toLowerCase();
+
+        if (extname !== '.gltf' && extname !== '.glb') {
+            alert('不支持非.gltf或.glb后缀文件');
+            return;
+        }
+
         let fileLoader = new FileLoader({baseUrl: path.dirname(url)}),
             gltfParser = new GLTFParser({loader: fileLoader});
 
         return fileLoader.load(path.basename(url))
-            .then(function (json) {
-                return gltfParser.parse(json);
+            .then(function (data) {
+                if (extname === '.gltf') {
+                    return data.json();
+                } else if (extname === '.glb') {
+                    return data.arrayBuffer();
+                }
+            })
+            .then(function (data) {
+                    console.log('data:', data);
+                if (extname === '.gltf') {
+                    return gltfParser.parseJson(data);
+                } else if(extname === '.glb') {
+                    return gltfParser.parseArrayBuffer(data);
+                }
             });
+
     }
 
     componentDidMount() {

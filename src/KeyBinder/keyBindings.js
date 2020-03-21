@@ -5,5 +5,5 @@ export default [
     { key: 'M', command: 'renderer.setViewType', args: 'mesh' },
     { key: 'W', command: 'renderer.setViewType', args: 'wireframe' },
     { key: 'Ctrl+O', command: 'open' },
-    { key: 'Ctrl+Shift+O', command: 'open' },
+    { key: 'Ctrl+Shift+O', command: 'openUrl' },
 ];

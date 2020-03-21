@@ -49,6 +49,7 @@ export default class App extends React.Component {
         this.setViewType = this.setViewType.bind(this);
         this.setActiveCameraType = this.setActiveCameraType.bind(this);
         this.open = this.open.bind(this);
+        this.openUrl = this.openUrl.bind(this);
 
         this.stats = React.createRef();
         this.gltfLoaderRef = React.createRef();
@@ -99,6 +100,15 @@ export default class App extends React.Component {
         }
     }
 
+    openUrl() {
+        let url = prompt('请输入gltf或glb文件地址');
+
+        let gltfLoader = this.gltfLoaderRef.current;
+        if (gltfLoader) {
+            gltfLoader.loadGltfFromUrl(url).then(this.renderGltf);
+        }
+    }
+
     setSelectedNode(uid) {
         this.setState({selectedNode: uid});
     }
@@ -130,6 +140,7 @@ export default class App extends React.Component {
         commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
         commandManager.registerCommand('renderer.setViewType', this.setViewType);
         commandManager.registerCommand('open', this.open);
+        commandManager.registerCommand('openUrl', this.openUrl);
     }
 
     componentWillUnmount() {
@@ -138,6 +149,7 @@ export default class App extends React.Component {
         commandManager.unregisterCommand('renderer.setActiveCameraType');
         commandManager.unregisterCommand('renderer.setViewType');
         commandManager.unregisterCommand('open');
+        commandManager.unregisterCommand('openUrl');
     }
 
     render() {

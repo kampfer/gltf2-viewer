@@ -29,7 +29,7 @@ export default function TopBar(props) {
                         text: '打开远程Gltf/Glb文件',
                         secondaryText: 'Ctrl+Shift+O',
                         onClick: function () {
-                            commandManager.executeCommand('open');
+                            commandManager.executeCommand('openUrl');
                         },
                         canCheck: false,
                     }, {
