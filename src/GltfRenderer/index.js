@@ -219,7 +219,7 @@ export default class GltfRenderer extends React.Component {
             width = props.width,
             height = props.height;
         return (
-            <canvas ref={this.webglCanvas} width={width} height={height} tabIndex="1" className="gltf-renderer"></canvas>
+            <canvas ref={this.webglCanvas} width={width} height={height} className="gltf-renderer"></canvas>
         );
     }
 

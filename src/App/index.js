@@ -38,11 +38,11 @@ export default class App extends React.Component {
             rendererHeight: winHeight - 30 - padding - 20 -padding
         };
 
-        this.renderGltf = this.renderGltf.bind(this);
-        this.handleDragStart = this.handleDragStart.bind(this);
+        this.handleDropOver = this.handleDropOver.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
         this.handleWinResize = debounce(this.handleWinResize, 100).bind(this);
 
+        this.renderGltf = this.renderGltf.bind(this);
         this.setSelectedNode = this.setSelectedNode.bind(this);
         this.changeNodeViewerHeight = this.changeNodeViewerHeight.bind(this);
         this.changeSideBarWidth = this.changeSideBarWidth.bind(this);
@@ -60,21 +60,26 @@ export default class App extends React.Component {
         this.setState({
             gltf,
             selectedNode: undefined,
-            hideFileReader: true
+            hideFileReader: true,
+            activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
+            viewType: 'mesh',
         });
     }
 
-    stopDefault(e) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
+    // Typically, an application will include a dragover event handler on the drop target element
+    // and that handler will turn off the browser's default drag behavior.
+    handleDropOver(e) {
         e.preventDefault();
-        e.stopPropagation();
-    }
-
-    handleDragStart(e) {
-        this.gltfLoader.current.handleDragStart(e);
     }
 
     handleDrop(e) {
-        this.gltfLoader.current.handleDrop(e);
+        e.preventDefault();
+
+        let gltfLoader = this.gltfLoaderRef.current;
+        if (gltfLoader) {
+            gltfLoader.loadGltfFromFiles(e.dataTransfer.files).then(this.renderGltf);
+        }
     }
 
     setViewType(type) {
@@ -189,7 +194,7 @@ export default class App extends React.Component {
                                 </ResizeHelper>
                             </Grid>
                             <Grid flexGrow={1}>
-                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop}>
+                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
                                     <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
                                     <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer

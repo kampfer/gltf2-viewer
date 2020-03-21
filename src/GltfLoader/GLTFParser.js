@@ -150,8 +150,8 @@ export default class GLTFParser {
         let reader = new GLTFBinaryReader(data),
             content = reader.content;
 
-        console.log('glTF Data:', data);
         data = JSON.parse(content);
+        console.log('glTF Data:', data);
 
         // parse buffer时需要使用reader.body
         this._binaryReader = reader;
