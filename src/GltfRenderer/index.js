@@ -28,11 +28,18 @@ export default class GltfRenderer extends React.Component {
 
         this.webglCanvas = React.createRef();
 
-        this.activeCamera = null;
+        this.webglRenderer = null;
 
-        this.cameraController = null;
+        this._activeCameraType = null;
 
-        this.mixer = null;
+        this._mixer = null;
+
+        // 保存所有类型的相机和对应的controller，这样切换相机时更流畅：
+        // 渲染时使用一种相机，但是控制镜头时两个controller都在更新相机，这样保证相机位置和朝向完全同步
+        this._cameras = null;
+        this._controllers = null;
+
+        this._clock = null;
 
     }
 
@@ -44,65 +51,7 @@ export default class GltfRenderer extends React.Component {
     }
 
     setActiveCameraType(type) {
-        let gltf = this.props.gltf,
-            oldActiveCamera = this.activeCamera,
-            oldCameraController = this.cameraController,
-            box = this.getSceneBox(),
-            size =box.getSize(),
-            center = box.getCenter(),
-            length = size.length(),
-            activeCamera,
-            target;
-
-        if (!gltf) return;
-
-        if (oldActiveCamera && oldActiveCamera.type === type) return;
-
-        let canvas = this.webglCanvas.current,
-            width = canvas.width,
-            height = canvas.height,
-            near = 0.1,
-            far = length * 100,
-            fovy = mathUtils.degToRad(90),
-            aspect = width / height;
-
-        if (type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
-            activeCamera = new PerspectiveCamera(fovy, aspect, near, far);
-        } else if (type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-            let sizeY = Math.tan(fovy / 2) * length,
-                sizeX = sizeY * aspect;
-            activeCamera = new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far);
-        }
-
-        if (oldCameraController) {
-            target = oldCameraController.target;
-        } else {
-            target = center;
-        }
-
-        if (oldActiveCamera) {
-            activeCamera.position.copy(oldActiveCamera.position);
-            activeCamera.quaternion.copy(oldActiveCamera.quaternion);
-            activeCamera.scale.copy(oldActiveCamera.scale);
-            activeCamera.lookAt(target);
-            activeCamera.updateWorldMatrix();
-        } else {
-            activeCamera.position.copy(center);
-            activeCamera.position.z += length;
-            activeCamera.lookAt(center);
-            activeCamera.updateWorldMatrix();
-        }
-
-        this.activeCamera = activeCamera;
-
-        // controller绑定了事件，必须destroy
-        if (oldCameraController) {
-            oldCameraController.destroy();
-        }
-        this.cameraController = new OrbitController(activeCamera, this.webglRenderer.domElement);
-        this.cameraController.target = target;
-
-        return activeCamera;
+        this._activeCameraType = type;
     }
 
     setViewType(type) {
@@ -124,27 +73,86 @@ export default class GltfRenderer extends React.Component {
 
     stopRender() {
         cancelAnimationFrame(this._animationTimer);
+
+        this._cameras = null;
+
+        // 需要取消事件监听
+        if (this._controllers) {
+            for(let type in this._controllers) {
+                this._controllers[type].destroy();
+            }
+        }
+
+        if (this._mixer) this._mixer.destroy();
+    }
+
+    pause() {
+        this._clock.stop();
+    }
+
+    resume() {
+        this._clock.start();
     }
 
     renderGltf(gltf, cameraType) {
         console.log('gltf:', gltf);
 
+        // 停止前一个gltf的渲染（停止动画、销毁事件等等）
+        this.stopRender();
+
         let props = this.props,
             scene = gltf.scenes[gltf.scene],
-            renderer = this.webglRenderer,
-            box = this.getSceneBox(),
-            size = box.getSize(),
-            length = size.length();
+            renderer = this.webglRenderer;
 
-        this.setActiveCameraType(cameraType)
-
+        // 查看模式：mesh和wireframe
         this.setViewType(props.viewType);
 
-        if (this.mixer) {
-            this.mixer.destroy();
-        }
-        this.mixer = new AnimationMixer(gltf.animations);
+        let box = this.getSceneBox(),
+            size = box.getSize(),
+            length = size.length(),
+            center = box.getCenter(),
+            canvas = this.webglCanvas.current,
+            width = canvas.width,
+            height = canvas.height,
+            near = 0.1,
+            far = length * 100,
+            fovy = mathUtils.degToRad(90),
+            aspect = width / height,
+            sizeY = Math.tan(fovy / 2) * length,
+            sizeX = sizeY * aspect;
 
+        // 相机
+        this._cameras = {
+            [constants.OBJECT_TYPE_PERSPECTIVE_CAMERA]: new PerspectiveCamera(fovy, aspect, near, far),
+            [constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA]: new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far)
+        };
+
+        // 相机位置和朝向
+        for(let type in this._cameras) {
+            let camera = this._cameras[type];
+            camera.position.copy(center);
+            camera.position.z += length;
+            camera.lookAt(center);
+            camera.updateWorldMatrix();
+        }
+
+        // 镜头控制器
+        for(let cameraType in this._cameras) {
+            this._controllers = {};
+
+            let camera = this._cameras[cameraType],
+                controller = new OrbitController(camera, renderer.domElement);
+            controller.target = center.clone();
+
+            this._controllers[cameraType] = controller
+        }
+
+        // 动画
+        this._mixer = new AnimationMixer(gltf.animations);
+        // 计时器
+        this._clock = new Clock();
+
+        // 根据scene的尺寸计算cameraHelper的尺寸
         scene.traverse(function (child) {
             if (child.isCameraHelper === true) {
                 let helperSize = new Box3().setFromObject(child).getSize(),
@@ -154,26 +162,28 @@ export default class GltfRenderer extends React.Component {
             }
         });
 
+        // 辅助object
         let backgroundScene = new Scene(),
             gridHelper = new GridHelper(length * 15, 20, '#ccc');
         backgroundScene.add(gridHelper);
 
-        let clock = new Clock();
+        this.setActiveCameraType(cameraType);
 
         const animate = () => {
             this._animationTimer = requestAnimationFrame(animate);
 
-            if (this.props.beforeRender) this.props.beforeRender();
+            if (props.beforeRender) props.beforeRender();
 
-            renderer.clear();
+            this.webglRenderer.clear();
 
-            this.mixer.update(clock.getDeltaTime());
+            this._mixer.update(this._clock.getDeltaTime());
 
-            renderer.render(backgroundScene, this.activeCamera);
-            renderer.render(scene, this.activeCamera);
+            let camera = this._cameras[this._activeCameraType];
+            this.webglRenderer.render(backgroundScene, camera);
+            this.webglRenderer.render(scene, camera);
             // renderer.render(wireframeScene, camera);
 
-            if (this.props.afterRender) this.props.afterRender();
+            if (props.afterRender) props.afterRender();
         }
 
         animate();
@@ -200,8 +210,8 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentWillUnmount() {
+        this.stopRender();
         this.webglRenderer.destroy();
-        this.cameraController.destroy();
     }
 
     componentDidUpdate(prevProps) {
