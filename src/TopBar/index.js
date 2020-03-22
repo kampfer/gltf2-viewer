@@ -12,8 +12,8 @@ export default function TopBar(props) {
 
     const items = [
         {
-            key: 'open',
-            text: '功能',
+            key: 'functions',
+            text: '操作',
             subMenuProps: {
                 items: [
                     {

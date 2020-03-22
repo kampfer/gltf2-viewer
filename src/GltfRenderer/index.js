@@ -114,12 +114,16 @@ export default class GltfRenderer extends React.Component {
             canvas = this.webglCanvas.current,
             width = canvas.width,
             height = canvas.height,
-            near = 0.1,
+            near = size.z / 10,
             far = length * 100,
             fovy = mathUtils.degToRad(90),
             aspect = width / height,
             sizeY = Math.tan(fovy / 2) * length,
             sizeX = sizeY * aspect;
+
+        console.log('Scene box:', box);
+        console.log('Scene Size:', size, length);
+        console.log('Scene center:', center);
 
         // 相机
         this._cameras = {
