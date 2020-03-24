@@ -12,6 +12,7 @@ import {
     OrthographicCamera,
     mathUtils,
     constants,
+    Color,
 } from 'webglRenderEngine';
 
 import './index.less';
@@ -208,10 +209,15 @@ export default class GltfRenderer extends React.Component {
     }
 
     componentDidMount() {
+
         let canvas = this.webglCanvas.current;
         this.webglRenderer = new WebGLRenderer({ canvas, autoClearColor: false });
-        this.webglRenderer.setClearColor([58 / 255, 58 / 255, 58 / 255, 1]);
+
+        let clearColor = window.getComputedStyle(canvas).backgroundColor;
+        this.webglRenderer.setClearColor(new Color(clearColor));
+
         this.startRenderLater();
+
     }
 
     componentWillUnmount() {

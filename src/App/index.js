@@ -205,7 +205,7 @@ export default class App extends React.Component {
                                 </ResizeHelper>
                             </Grid>
                             <Grid flexGrow={1}>
-                                <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
+                                <div onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
                                     { state.showFPS && <Stats ref={this.stats} right={5} top={30 + 3 + 3} /> }
                                     <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer
