@@ -20,12 +20,6 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        let sideBarWith = 240,
-            nodeViewerHeight = 560,
-            winWidth = window.innerWidth,
-            winHeight = window.innerHeight,
-            padding = 3;
-
         this.state = {
             gltf: null,
             selectedNode: undefined,
@@ -33,10 +27,7 @@ export default class App extends React.Component {
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
             viewType: 'mesh',
             hideFileReader: false,
-            sideBarWith: sideBarWith,
-            nodeViewerHeight: nodeViewerHeight,
-            rendererWidth: winWidth - sideBarWith - padding,
-            rendererHeight: winHeight - 30 - padding - 20 -padding
+            ...this.calculateLayout(),
         };
 
         this.handleDropOver = this.handleDropOver.bind(this);
@@ -120,24 +111,37 @@ export default class App extends React.Component {
     }
 
     changeSideBarWidth({ deltaSize }) {
-        let size = this.state.sideBarWith;
-        this.setState({sideBarWith: size + deltaSize});
+        let sideBarWidth = this.state.sideBarLayout.width + deltaSize;
+        this.setState(this.calculateLayout({ sideBarWidth }));
     }
 
     changeNodeViewerHeight({ deltaSize }) {
-        let size = this.state.nodeViewerHeight;
-        this.setState({nodeViewerHeight: size + deltaSize});
+        let nodeViewerHeight = this.state.nodeViewerLayout.height + deltaSize;
+        this.setState(this.calculateLayout({ nodeViewerHeight }));
     }
 
     handleWinResize() {
-        let state = this.state,
-            winWidth = window.innerWidth,
-            winHeight = window.innerHeight,
-            padding = 3,
-            rendererWidth = winWidth - state.sideBarWith - padding,
-            rendererHeight = winHeight - 30 - padding - 20 -padding;
+        let sideBarWidth = this.state.sideBarLayout.width;
+        let nodeViewerHeight = this.state.nodeViewerLayout.height;
+        this.setState(this.calculateLayout({sideBarWidth, nodeViewerHeight}));
+    }
 
-        this.setState({rendererWidth, rendererHeight});
+    calculateLayout({
+        topBarHeight = 30,
+        statusBarHeight = 20,
+        sideBarWidth = 240,
+        nodeViewerHeight = 560
+    } = {}) {
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+        return {
+            // topBarLayout: { height: topBarHeight },
+            // statusBarLayout: { height: statusBarHeight },
+            sideBarLayout: {width: sideBarWidth },
+            rendererLayout: { width: winWidth - sideBarWidth, height: winHeight - topBarHeight - statusBarHeight},
+            nodeViewerLayout: { height: nodeViewerHeight},
+            nodePropertyViewerLayout: { height: winHeight - topBarHeight - statusBarHeight - nodeViewerHeight}
+        };
     }
 
     componentDidMount() {
@@ -160,6 +164,10 @@ export default class App extends React.Component {
         commandManager.unregisterCommand('openUrl');
     }
 
+    componentDidUpdate() {
+        console.log('update');
+    }
+
     render() {
 
         let state = this.state,
@@ -174,12 +182,12 @@ export default class App extends React.Component {
                     </Grid>
                     <Grid flexGrow={1}>
                         <GridContainer>
-                            <Grid width={state.sideBarWith}>
+                            <Grid width={state.sideBarLayout.width}>
                                 <ResizeHelper resizeX onResize={this.changeSideBarWidth}>
                                     <GridContainer vertical>
                                         <Grid>
                                             <ResizeHelper resizeY onResize={this.changeNodeViewerHeight}>
-                                                <GltfNodeViewer height={state.nodeViewerHeight}
+                                                <GltfNodeViewer height={state.nodeViewerLayout.height}
                                                     gltf={state.gltf}
                                                     onSelectNode={this.setSelectedNode}
                                                     selectedNode={selectedNode}
@@ -190,7 +198,7 @@ export default class App extends React.Component {
                                             <GltfNodePropertyViewer
                                                 gltf={state.gltf}
                                                 selectedNode={selectedNode}
-                                                height={window.innerHeight - state.nodeViewerHeight - 30 - 20 - 3 * 2}
+                                                height={state.nodePropertyViewerLayout.height}
                                             ></GltfNodePropertyViewer>
                                         </Grid>
                                     </GridContainer>
@@ -205,10 +213,10 @@ export default class App extends React.Component {
                                         gltf={state.gltf}
                                         selectedNode={state.selectedNode}
                                         hide={this.state.hideGltfRenderer}
-                                        // beforeRender={() => this.stats.current.begin()}
-                                        // afterRender={() => this.stats.current.end()}
-                                        width={state.rendererWidth}
-                                        height={state.rendererHeight}
+                                        beforeRender={ state.showFPS && (() => this.stats.current.begin()) }
+                                        afterRender={ state.showFPS && (() => this.stats.current.end()) }
+                                        width={state.rendererLayout.width}
+                                        height={state.rendererLayout.height}
                                         activeCameraType={state.activeCameraType}
                                         viewType={state.viewType}
                                     />

@@ -24,7 +24,7 @@ export default function Button(props) {
     };
 
     return (
-        <button className="button" onClick={handleClick} ref={buttonRef}>
+        <button className={`button ${canShowMenu ? 'selected' : ''}`} onClick={handleClick} ref={buttonRef}>
             <span className="button-label">{props.text}</span>
             { menuProps && canShowMenu && <Menu items={menuProps.items} position={menuPosition}/> }
         </button>
