@@ -29,6 +29,7 @@ export default class App extends React.Component {
         this.state = {
             gltf: null,
             selectedNode: undefined,
+            showFPS: false,
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
             viewType: 'mesh',
             hideFileReader: false,
@@ -140,6 +141,8 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
+        if (location.search.indexOf('showFPS=true') >= 0) this.setState({ showFPS: true });
+
         window.addEventListener('resize', this.handleWinResize);
 
         commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
@@ -195,15 +198,15 @@ export default class App extends React.Component {
                             </Grid>
                             <Grid flexGrow={1}>
                                 <div className="bg-color-black-1 border-radius-5" style={{position: 'relative'}} onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
-                                    <Stats ref={this.stats} right={5} top={30 + 3 + 3} />
+                                    { state.showFPS && <Stats ref={this.stats} right={5} top={30 + 3 + 3} /> }
                                     <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer
                                         ref={this.rendererRef}
                                         gltf={state.gltf}
                                         selectedNode={state.selectedNode}
                                         hide={this.state.hideGltfRenderer}
-                                        beforeRender={() => this.stats.current.begin()}
-                                        afterRender={() => this.stats.current.end()}
+                                        // beforeRender={() => this.stats.current.begin()}
+                                        // afterRender={() => this.stats.current.end()}
                                         width={state.rendererWidth}
                                         height={state.rendererHeight}
                                         activeCameraType={state.activeCameraType}

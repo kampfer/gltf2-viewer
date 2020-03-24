@@ -121,7 +121,6 @@ export default class GltfRenderer extends React.Component {
             sizeY = Math.tan(fovy / 2) * length,
             sizeX = sizeY * aspect;
 
-        console.log('Scene box:', box);
         console.log('Scene Size:', size, length);
         console.log('Scene center:', center);
 
@@ -168,7 +167,9 @@ export default class GltfRenderer extends React.Component {
 
         // 辅助object
         let backgroundScene = new Scene(),
-            gridHelper = new GridHelper(length * 15, 20, '#ccc');
+            gridWidth = length * 10,
+            gridDivisions = Math.round(gridWidth / (length / 10)),
+            gridHelper = new GridHelper(gridWidth, gridDivisions);
         backgroundScene.add(gridHelper);
 
         this.setActiveCameraType(cameraType);
