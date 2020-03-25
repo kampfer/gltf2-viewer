@@ -116,11 +116,11 @@ export default class GltfRenderer extends React.Component {
             width = canvas.width,
             height = canvas.height,
             near = size.z / 10,
-            far = length * 100,
+            far = size.z * 10,
             fovy = mathUtils.degToRad(90),
             aspect = width / height,
-            sizeY = Math.tan(fovy / 2) * length,
-            sizeX = sizeY * aspect;
+            HalfFrustumHeihght = Math.tan(fovy / 2) * length,
+            HalfFrustumWidth = HalfFrustumHeihght * aspect;
 
         console.log('Scene Size:', size, length);
         console.log('Scene center:', center);
@@ -128,7 +128,7 @@ export default class GltfRenderer extends React.Component {
         // 相机
         this._cameras = {
             [constants.OBJECT_TYPE_PERSPECTIVE_CAMERA]: new PerspectiveCamera(fovy, aspect, near, far),
-            [constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA]: new OrthographicCamera(-sizeX, sizeX, sizeY, -sizeY, near, far)
+            [constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA]: new OrthographicCamera(-HalfFrustumWidth, HalfFrustumWidth, HalfFrustumHeihght, -HalfFrustumHeihght, near, far)
         };
 
         // 相机位置和朝向
