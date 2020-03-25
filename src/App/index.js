@@ -49,6 +49,7 @@ export default class App extends React.Component {
     }
 
     renderGltf(gltf) {
+        if (!gltf) return;
         this.setState({
             gltf,
             selectedNode: undefined,
@@ -93,16 +94,14 @@ export default class App extends React.Component {
     open() {
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
-            gltfLoader.open().then(this.renderGltf);
+            gltfLoader.open().then(this.renderGltf, function () {});
         }
     }
 
     openUrl() {
-        let url = prompt('请输入gltf或glb文件地址');
-
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
-            gltfLoader.loadGltfFromUrl(url).then(this.renderGltf);
+            gltfLoader.openUrl().then(this.renderGltf, function () {});
         }
     }
 

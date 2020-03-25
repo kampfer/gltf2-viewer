@@ -73,8 +73,7 @@ export default class FileReader extends React.Component {
         let extname = path.extname(url).toLowerCase();
 
         if (extname !== '.gltf' && extname !== '.glb') {
-            alert('不支持非.gltf或.glb后缀文件');
-            return;
+            return Promise.reject('文件格式不正确');
         }
 
         let fileLoader = new FileLoader({baseUrl: path.dirname(url)}),
@@ -94,7 +93,11 @@ export default class FileReader extends React.Component {
 
             return new Promise((resolve, reject) => {
                 this.onceFileInputChange(function (input) {
-                    resolve(input.files);
+                    if (input.files.length > 0) {
+                        resolve(input.files);
+                    } else {
+                        reject('取消');
+                    }
                 });
                 setTimeout(function () {
                     reject('操作超时！');
@@ -110,7 +113,11 @@ export default class FileReader extends React.Component {
 
     openUrl() {
         let url = prompt('请输入gltf或glb文件地址');
-        return this.loadGltfFromUrl(url);
+        if (!url) {
+            return Promise.reject('输入已取消');
+        } else {
+            return this.loadGltfFromUrl(url);
+        }
     }
 
     onceFileInputChange(callback) {
