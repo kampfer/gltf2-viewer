@@ -143,10 +143,15 @@ export default class App extends React.Component {
         };
     }
 
+    disableContextMenu(e) {
+        e.preventDefault();
+    }
+
     componentDidMount() {
         if (location.search.indexOf('showFPS=true') >= 0) this.setState({ showFPS: true });
 
         window.addEventListener('resize', this.handleWinResize);
+        window.addEventListener('contextmenu', this.disableContextMenu);
 
         commandManager.registerCommand('renderer.setActiveCameraType', this.setActiveCameraType);
         commandManager.registerCommand('renderer.setViewType', this.setViewType);
@@ -156,6 +161,7 @@ export default class App extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleWinResize);
+        window.removeEventListener('contextmenu', this.disableContextMenu);
 
         commandManager.unregisterCommand('renderer.setActiveCameraType');
         commandManager.unregisterCommand('renderer.setViewType');

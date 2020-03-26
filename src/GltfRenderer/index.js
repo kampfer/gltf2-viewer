@@ -228,10 +228,10 @@ export default class GltfRenderer extends React.Component {
     componentDidUpdate(prevProps) {
         let props = this.props;
 
-        if (prevProps.gltf !== props.gltf ||
-            prevProps.width !== props.width ||
-            prevProps.height !== props.height) {
+        if (prevProps.gltf !== props.gltf) {
             this.startRenderLater();
+        } else if (prevProps.width !== props.width || prevProps.height !== props.height) {
+            this.webglRenderer.setViewport(0, 0, props.width, props.height);
         }
     }
 
