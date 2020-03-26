@@ -122,7 +122,8 @@ export default class GltfRenderer extends React.Component {
             HalfFrustumHeihght = Math.tan(fovy / 2) * length,
             HalfFrustumWidth = HalfFrustumHeihght * aspect;
 
-        console.log('Scene Size:', size, length);
+        console.log('Scene Size:', size);
+        console.log('length:', length);
         console.log('Scene center:', center);
 
         // 相机
@@ -141,14 +142,23 @@ export default class GltfRenderer extends React.Component {
         }
 
         // 镜头控制器
+        this._controllers = {};
         for(let cameraType in this._cameras) {
-            this._controllers = {};
-
             let camera = this._cameras[cameraType],
                 controller = new OrbitController(camera, renderer.domElement);
             controller.target = center.clone();
 
-            this._controllers[cameraType] = controller
+            let minDistance = near,
+                maxDistance = far - length;
+            if (camera.type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
+                controller.minDistance = minDistance;
+                controller.maxDistance = maxDistance;
+            } else if (camera.type === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
+                controller.maxZoom = length / (Math.tan(fovy / 2) * minDistance);
+                controller.minZoom = length / (Math.tan(fovy / 2) * maxDistance);
+            }
+
+            this._controllers[camera.type] = controller;
         }
 
         // 动画
@@ -168,9 +178,10 @@ export default class GltfRenderer extends React.Component {
 
         // 辅助object
         let backgroundScene = new Scene(),
-            gridWidth = length * 10,
-            gridDivisions = Math.round(gridWidth / (length / 10)),
-            gridHelper = new GridHelper(gridWidth, gridDivisions);
+            gridDivisions = 100,
+            gridWidth = length / 10,
+            gridHelper = new GridHelper(gridWidth * gridDivisions, gridDivisions);
+        console.log(`gridWidth = ${gridWidth}`);
         backgroundScene.add(gridHelper);
 
         this.setActiveCameraType(cameraType);
