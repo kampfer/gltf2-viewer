@@ -6,7 +6,18 @@ let proConfig = Object.assign(config, {
     mode: 'production',
     resolve: {
         alias: {
-            'webglRenderEngine': path.join(__dirname, '../src/webglRenderEngine/build/webglRenderEngine.js')
+            'webglRenderEngine': path.join(__dirname, '../src/webglRenderEngine/build/webglRenderEngine.min.js')
+        }
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    test: /[\\/]node_modules[\\/]|[\\/]src[\\/]webglRenderEngine[\\/]/,
+                    name: 'vendor',
+                    chunks: 'all',
+                }
+            }
         }
     },
     entry: path.join(__dirname, '../src/index')

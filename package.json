@@ -12,7 +12,7 @@
     "build:electron": "node ./scripts/electronBuild.js",
     "build:web": "webpack --config scripts/webpack.pro.config.js",
     "build": "npm run build:web && npm run build:electron",
-    "analyse": "webpack --profile --json > stats.json"
+    "analyse": "webpack --config scripts/webpack.pro.config.js --profile --json > stats.json"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
