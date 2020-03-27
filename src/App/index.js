@@ -12,6 +12,7 @@ import debounce from '../utils/debounce';
 import KeyBinder from '../KeyBinder';
 import { commandManager } from '../commands';
 import { constants } from 'webglRenderEngine';
+import KeyBindingTip from './KeybindingTip';
 
 import './index.less';
 
@@ -211,6 +212,7 @@ export default class App extends React.Component {
                             </Grid>
                             <Grid flexGrow={1}>
                                 <div onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
+                                    { !state.gltf && <KeyBindingTip></KeyBindingTip> }
                                     { state.showFPS && <Stats ref={this.stats} right={5} top={30 + 3 + 3} /> }
                                     <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
                                     <GltfRenderer
