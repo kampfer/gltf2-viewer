@@ -1,0 +1,29 @@
+.spinner {
+
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-14px -14px);
+
+    .spinner-circle {
+
+        box-sizing: border-box;
+        animation-name: rotate-360;
+        animation-duration: 1.3s;
+        animation-iteration-count: infinite;
+        animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border-width: 1.5px;
+        border-style: solid;
+        border-color: rgb(0, 120, 212) rgb(199, 224, 244) rgb(199, 224, 244);
+        border-image: initial;
+
+        @keyframes rotate-360 {
+            100%{ transform: rotate(360deg); }
+        }
+
+    }
+
+}
