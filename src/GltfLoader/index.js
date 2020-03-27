@@ -2,6 +2,7 @@ import React from 'react';
 import FileLoader from './FileLoader';
 import GLTFParser from './GLTFParser';
 import path from 'path';
+import Spinner from '../ui/Spinner';
 
 import './index.less';
 
@@ -13,6 +14,9 @@ export default class FileReader extends React.Component {
     constructor(props) {
         super(props);
         this.fileInputRef = React.createRef();
+        this.state = {
+            loading: false
+        };
     }
 
     loadGltfFromFiles(files) {
@@ -79,7 +83,13 @@ export default class FileReader extends React.Component {
         let fileLoader = new FileLoader({baseUrl: path.dirname(url)}),
             gltfParser = new GLTFParser({loader: fileLoader});
 
-        return fileLoader.load(path.basename(url)).then((data) => gltfParser.parse(data));
+        this.setState({ loading: true });
+
+        return fileLoader.load(path.basename(url))
+            .then((data) => {
+                this.setState({ loading: false })
+                return gltfParser.parse(data);
+            });
 
     }
 
@@ -142,7 +152,10 @@ export default class FileReader extends React.Component {
     render() {
         let displayStyle = { display: 'none' };
         return (
-            <input type="file" name="gltfFile" style={displayStyle} ref={this.fileInputRef} multiple />
+            <>
+                { this.state.loading && <Spinner /> }
+                <input type="file" name="gltfFile" style={displayStyle} ref={this.fileInputRef} multiple />
+            </>
         );
     }
 

@@ -63,7 +63,7 @@ export default class FileLoader {
         }
 
         console.log(`request: ${url}(${modifiedUrl})`);
-        let p = fetch(modifiedUrl)
+        let p = fetch(modifiedUrl, { mode: 'cors' })
             .then((res) => {
                 if (res.ok) {
                     return this.formatResponse(res, url);
