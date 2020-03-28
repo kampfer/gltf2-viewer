@@ -5,8 +5,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
+import supportedBrowsers from './supportedBrowsers';
+
+function SupportedBrowsersTip() {
+    return (
+        <div style={{color: 'black'}}>本应用只支持chrome、firefox、edge浏览器，请更换浏览器！</div>
+    )
+}
 
 ReactDOM.render(
-    <App />,
+    supportedBrowsers.test(navigator.userAgent) ? <App /> : <SupportedBrowsersTip />,
     document.getElementById('root')
 );
