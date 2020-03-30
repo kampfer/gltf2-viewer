@@ -15,8 +15,10 @@
 
     li {
 
-        margin-bottom: 20px;
         display: flex;
+        align-items: center;
+        height: 30px;
+        margin-bottom: 15px;
 
         .keybinding-name {
             width: 60px;
@@ -24,19 +26,29 @@
             text-align: right;
         };
 
-        .keybinding-key {
-            background-color: hsla(0,0%,50%,.17);
-            color: #ccc;
-            border: 1px solid rgba(51,51,51,.6);
-            border-bottom-color: rgba(68,68,68,.6);
-            box-shadow: inset 0 -1px 0 rgba(68,68,68,.6);
-            padding: 3px 5px;
-            margin: 0 2px;
-            border-radius: 3px;
-        };
+        .keybinding-short-cut {
 
-        .keybinding-separator {
-        };
+            display: flex;
+            align-items: center;
+
+            .keybinding-key {
+                background-color: hsla(0,0%,50%,.17);
+                color: #ccc;
+                border: 1px solid rgba(51,51,51,.6);
+                border-bottom-color: rgba(68,68,68,.6);
+                box-shadow: inset 0 -1px 0 rgba(68,68,68,.6);
+                padding: 3px 5px;
+                margin: 0 2px;
+                border-radius: 3px;
+            };
+
+            .keybinding-mouse {
+                height: 20px;
+            }
+
+        }
+
+        
     
     }
 

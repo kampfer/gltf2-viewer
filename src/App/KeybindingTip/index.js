@@ -12,7 +12,7 @@ export default function KeyBindingTip() {
             <ul>
                 <li>
                     <span className="keybinding-name">打开文件</span>
-                    <span>
+                    <span className="keybinding-short-cut">
                         <span className="keybinding-key">Ctrl</span>
                         <span className="keybinding-separator">+</span>
                         <span className="keybinding-key">O</span>
@@ -20,12 +20,30 @@ export default function KeyBindingTip() {
                 </li>
                 <li>
                     <span className="keybinding-name">打开URL</span>
-                    <span>
+                    <span className="keybinding-short-cut">
                         <span className="keybinding-key">Ctrl</span>
                         <span className="keybinding-separator">+</span>
                         <span className="keybinding-key">Shift</span>
                         <span className="keybinding-separator">+</span>
                         <span className="keybinding-key">O</span>
+                    </span>
+                </li>
+                <li>
+                    <span className="keybinding-name">旋转镜头</span>
+                    <span className="keybinding-short-cut">
+                        <span className="keybinding-mouse">
+                            <i className="icon mouse-left"></i>
+                        </span>
+                    </span>
+                </li>
+                <li>
+                    <span className="keybinding-name">移动镜头</span>
+                    <span className="keybinding-short-cut">
+                        <span className="keybinding-key">Shitf</span>
+                        <span className="keybinding-separator">+</span>
+                        <span className="keybinding-mouse">
+                            <i className="icon mouse-left"></i>
+                        </span>
                     </span>
                 </li>
             </ul>
