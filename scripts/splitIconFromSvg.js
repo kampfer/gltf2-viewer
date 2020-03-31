@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { parse } = require('svg-parser');
 const {SVGPathDataParser, encodeSVGPath, SVGPathData} = require('svg-pathdata');
 
 function fixSvgPath(pathStr, deltaX, deltaY) {
@@ -53,23 +54,21 @@ const parser = new SVGPathDataParser();
 const svgDir = path.join(__dirname, '../src/common/svgs');
 const svgFixedDir = path.join(svgDir, 'fixed');
 const icons = [
-    { name: 'empty-object', left: 0, top: 20 },
-    { name: 'mesh', left: 1, top: 20 },
+    { name: 'empty-object', id: 'path12350-2', left: 0, top: 20 },
+    { name: 'mesh', id: 'path14201', left: 1, top: 20 },
     {
         name: 'camera',
+        id: 'g20978-8',
         left: 6,
         top: 20,
-        fix: function (content) {
+        fix: function (elem) {
             let transform = [477 + 42, -1375-42],
                 deltaX = -(3 + 21 * 6) + transform[0],
                 deltaY = -(8 + 21 * 20) + transform[1],
-                reg = /d="([^"]*)"/ug,
-                d = reg.exec(content),
                 pathArr = [];
 
-            while(d) {
-                pathArr.push(`<path d="${fixSvgPath(d[1], deltaX, deltaY)}" />`)
-                d = reg.exec(content);
+            for(let child of elem.children) {
+                pathArr.push(`<path d="${fixSvgPath(child.properties.d, deltaX, deltaY)}" />`);
             }
 
             return `
@@ -80,46 +79,61 @@ const icons = [
 
         } 
     },
-    { name: 'expand', left: 10, top: 29 },
-    { name: 'collapse', left: 11, top: 29 },
-    { name: 'visible', left: 20, top: 20 },
-    { name: 'hidden', left: 19, top: 20 },
-    { name: 'tick', left: 10, top: 28 },
-    { name: 'mouse-left', left: 0, top: 21 },
+    { name: 'expand', id: 'path14031', left: 10, top: 29 },
+    { name: 'collapse', id: 'path14837', left: 11, top: 29 },
+    { name: 'visible', id: 'path19347-7', left: 20, top: 20 },
+    { name: 'hidden', id: 'path13646-9', left: 19, top: 20 },
+    { name: 'tick', id: 'path27826', left: 10, top: 28 },
+    { name: 'mouse-left', id: 'path10927', left: 0, top: 21 },
 ];
 
-for(let item of icons) {
+let svg = fs.readFileSync(path.join(svgDir, 'icons.svg')).toString();
 
-    let svgName = item.name + '.svg',
-        svgFile = fs.readFileSync(path.join(svgDir, svgName)),
-        content = svgFile.toString(),
-        fixedContent;
+function travserSvg(elem, callback) {
 
-    if (item.fix) {
+    if (callback(elem) === false) return;
 
-        fixedContent = item.fix(content);
+    if (elem.children && elem.children.length > 0) {
+        
+        for(let child of elem.children) {
 
-    } else {
-
-        let d = /d="([^"]*)"/u.exec(content);
-
-        if (d) {
-
-            d = d[1];
-
-            let deltaX = -(3 + 21 * item.left),
-                deltaY = -(8 + 21 * item.top);
-
-            fixedContent = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="${fixSvgPath(d, deltaX, deltaY)}" /></svg>`
-
-        } else {
-
-            throw '没有d属性';
+            travserSvg(child, callback);
 
         }
 
     }
 
-    fs.writeFileSync(path.join(svgFixedDir, svgName), fixedContent);
-
 }
+
+travserSvg(parse(svg), (elem) => {
+
+    if (!elem.properties) return;
+
+    for(let icon of icons) {
+
+        if (icon.id === elem.properties.id) {
+
+            let svgName = icon.name + '.svg',
+                svgContent;
+
+            if (icon.fix) {
+
+                svgContent = icon.fix(elem);
+
+            } else {
+
+                let d = elem.properties.d,
+                    deltaX = -(3 + 21 * icon.left),
+                    deltaY = -(8 + 21 * icon.top);
+
+                svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="${fixSvgPath(d, deltaX, deltaY)}" /></svg>`
+
+            }
+
+            fs.writeFileSync(path.join(svgFixedDir, svgName), svgContent);
+
+        }
+
+    }
+
+});
