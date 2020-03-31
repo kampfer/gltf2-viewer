@@ -1,0 +1,57 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?1m49z5');
+  src:  url('fonts/icomoon.eot?1m49z5#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?1m49z5') format('truetype'),
+    url('fonts/icomoon.woff?1m49z5') format('woff'),
+    url('fonts/icomoon.svg?1m49z5#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-collapse:before {
+  content: "\e900";
+}
+.icon-empty-object:before {
+  content: "\e901";
+}
+.icon-expand:before {
+  content: "\e902";
+}
+.icon-hidden:before {
+  content: "\e903";
+}
+.icon-mesh:before {
+  content: "\e904";
+}
+.icon-mouse-left:before {
+  content: "\e905";
+}
+.icon-tick:before {
+  content: "\e906";
+}
+.icon-visible:before {
+  content: "\e907";
+}
+.icon-camera:before {
+  content: "\e90f";
+}
+.icon-youtube2:before {
+  content: "\ea9e";
+}

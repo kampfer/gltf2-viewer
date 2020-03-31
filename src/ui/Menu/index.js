@@ -13,7 +13,7 @@ function MenuItem(props) {
     return (
         <li className="menu-item" onClick={handleClick}>
             <span className={'command' + (props.checked ? ' checked' : '')}>
-                { props.checked && <i className="icon tick"></i> }
+                { props.checked && <i className="icon-tick"></i> }
                 <span className="command-name">{props.text}</span>
                 <span className="command-short-cut">{props.secondaryText}</span>
             </span>

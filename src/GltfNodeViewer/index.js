@@ -58,7 +58,7 @@ class Node extends React.Component {
     }
 
     createIcon(type = nodeTypeToIcon.default, index, onClick) {
-        return <i className={`icon ${type}`} key={index} onClick={onClick}>{type}</i>
+        return <i className={`icon-${type}`} key={index} onClick={onClick}></i>
     }
 
     toggleVisibility(e) {
@@ -123,7 +123,12 @@ class Node extends React.Component {
 
         }
 
-        icons.push(this.createIcon(nodeTypeToIcon[node.type], icons.length));
+        if (node.isCameraHelper) {
+            icons.push(this.createIcon('camera', icons.length));
+        } else {
+            icons.push(this.createIcon(nodeTypeToIcon[node.type], icons.length));
+        }
+        
 
         for(let i = 0; i < level; i++) {
             indentGuides.push(
@@ -140,7 +145,7 @@ class Node extends React.Component {
                     </div>
                     { icons }
                     <div className="node-name">{name}</div>
-                    <i className={`icon ${visible ? 'visible' : 'hidden'}`} onClick={this.toggleVisibility}></i>
+                    <i className={visible ? 'icon-visible' : 'icon-hidden'} onClick={this.toggleVisibility}></i>
                 </div>
                 { children }
             </div>

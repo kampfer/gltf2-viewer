@@ -32,7 +32,7 @@ export default function KeyBindingTip() {
                     <span className="keybinding-name">旋转镜头</span>
                     <span className="keybinding-short-cut">
                         <span className="keybinding-mouse">
-                            <i className="icon mouse-left"></i>
+                            <i className="icon-mouse-left"></i>
                         </span>
                     </span>
                 </li>
@@ -42,7 +42,7 @@ export default function KeyBindingTip() {
                         <span className="keybinding-key">Shitf</span>
                         <span className="keybinding-separator">+</span>
                         <span className="keybinding-mouse">
-                            <i className="icon mouse-left"></i>
+                            <i className="icon-mouse-left"></i>
                         </span>
                     </span>
                 </li>
