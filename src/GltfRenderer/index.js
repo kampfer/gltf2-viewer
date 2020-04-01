@@ -115,8 +115,8 @@ export default class GltfRenderer extends React.Component {
             canvas = this.webglCanvas.current,
             width = canvas.width,
             height = canvas.height,
-            near = size.z / 10,
-            far = size.z * 10,
+            near = length / 100,
+            far = length * 10,
             fovy = mathUtils.degToRad(90),
             aspect = width / height,
             HalfFrustumHeihght = Math.tan(fovy / 2) * length,
@@ -149,7 +149,7 @@ export default class GltfRenderer extends React.Component {
             controller.target = center.clone();
 
             let minDistance = near,
-                maxDistance = far - length;
+                maxDistance = far - length * 5;
             if (camera.type === constants.OBJECT_TYPE_PERSPECTIVE_CAMERA) {
                 controller.minDistance = minDistance;
                 controller.maxDistance = maxDistance;
