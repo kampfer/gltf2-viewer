@@ -1,4 +1,5 @@
 import React from 'react';
+import throttle from '../utils/throttle';
 
 import './index.less';
 
@@ -9,7 +10,7 @@ export default class ResizeHelper extends React.Component {
 
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseMove = throttle(this.handleMouseMove.bind(this), 17);
     }
 
     handleMouseDown(e) {

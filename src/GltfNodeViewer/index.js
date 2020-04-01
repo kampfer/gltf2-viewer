@@ -132,8 +132,7 @@ class Node extends React.Component {
 
         for(let i = 0; i < level; i++) {
             indentGuides.push(
-                <div className="indent-guide" key={i * 2}></div>,
-                <div className="indent-guide" key={i * 2 + 1}></div>
+                <div className="indent-guide" key={i}></div>
             );
         }
 

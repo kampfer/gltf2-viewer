@@ -29,6 +29,7 @@
                     height: 100%;
 
                     .indent-guide {
+                        margin-left: 10px;
                         box-sizing: border-box;
                         width: 10px;
                         height: 100%;
@@ -72,11 +73,11 @@
 
         }
 
-    }
+        &:hover .indent-guide,
+        .node.selected .node-children .indent-guide:last-child {
+            border-color: #39393a!important;
+        }
 
-    .body:hover .indent-guide:nth-child(even),
-    .node.selected .node-children .indent-guide:nth-child(even):last-child {
-        border-color: #39393a!important;
     }
 
 }

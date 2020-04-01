@@ -33,7 +33,7 @@ export class Grid extends React.Component {
             height = props.height,
             flexGrow = props.flexGrow,
             flexBasis,
-            style = { flexGrow };
+            style = { flexGrow, width };
 
         if (width !== undefined && height !== undefined) {
             console.warn(`Grid.render: 不允许同时设置width和height`);

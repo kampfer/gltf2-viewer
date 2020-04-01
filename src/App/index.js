@@ -170,10 +170,6 @@ export default class App extends React.Component {
         commandManager.unregisterCommand('openUrl');
     }
 
-    componentDidUpdate() {
-        console.log('update');
-    }
-
     render() {
 
         let state = this.state,
