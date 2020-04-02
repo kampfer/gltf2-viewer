@@ -3,6 +3,7 @@ import CommandBar from '../ui/CommandBar';
 import { MenuItemType } from '../ui/Menu';
 import { commandManager } from '../commands';
 import { constants } from 'webglRenderEngine';
+import { EnvContext } from '../App/contexts';
 
 import './index.less';
 
@@ -97,14 +98,16 @@ export default function TopBar(props) {
             <img src={logoImg} height="20" alt="glTF" className="logo" />
             <CommandBar items={items}/>
             <h1 className="app-title">GlTF2 Viewer</h1>
+            <EnvContext.Consumer>
             {
-                props.isElectron && 
+                (ENV) => ENV === 'electron' && 
                 <div className="window-controls-container">
                     <span className="window-control icon-chrome-minimize" onClick={minimizeWin}></span>
                     <span className="window-control icon-chrome-restore" onClick={restoreWin}></span>
                     <span className="window-control icon-chrome-close" onClick={closeWin}></span>
                 </div>
             }
+            </EnvContext.Consumer>
         </div>
     );
 

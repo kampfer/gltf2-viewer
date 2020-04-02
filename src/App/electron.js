@@ -4,11 +4,6 @@ import { commandManager } from '../commands';
 
 export default class ElectronApp extends App {
 
-    constructor(props) {
-        super(props);
-        this.isElectron = true;
-    }
-
     closeWin() {
         remote.getCurrentWindow().close();
     }

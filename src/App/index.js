@@ -180,7 +180,7 @@ export default class App extends React.Component {
             <KeyBinder>
                 <GridContainer vertical>
                     <Grid>
-                        <TopBar activeCameraType={state.activeCameraType} viewType={state.viewType} isElectron={this.isElectron}></TopBar>
+                        <TopBar activeCameraType={state.activeCameraType} viewType={state.viewType}></TopBar>
                     </Grid>
                     <Grid flexGrow={1}>
                         <GridContainer>

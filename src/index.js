@@ -6,6 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import supportedBrowsers from './supportedBrowsers';
+import { EnvContext } from './App/contexts';
 
 function SupportedBrowsersTip() {
     return (
@@ -14,6 +15,8 @@ function SupportedBrowsersTip() {
 }
 
 ReactDOM.render(
-    supportedBrowsers.test(navigator.userAgent) ? <App /> : <SupportedBrowsersTip />,
+    <EnvContext.Provider value="web">
+        { supportedBrowsers.test(navigator.userAgent) ? <App /> : <SupportedBrowsersTip /> }
+    </EnvContext.Provider>,
     document.getElementById('root')
 );
