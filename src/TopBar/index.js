@@ -8,6 +8,18 @@ import './index.less';
 
 import logoImg from './logo.png';
 
+function closeWin() {
+    commandManager.executeCommand('closeWin');
+}
+
+function minimizeWin() {
+    commandManager.executeCommand('minimizeWin');
+}
+
+function restoreWin() {
+    commandManager.executeCommand('restoreWin');
+}
+
 export default function TopBar(props) {
 
     const items = [
@@ -85,11 +97,14 @@ export default function TopBar(props) {
             <img src={logoImg} height="20" alt="glTF" className="logo" />
             <CommandBar items={items}/>
             <h1 className="app-title">GlTF2 Viewer</h1>
-            <div className="window-controls-container">
-                <span className="window-control icon-chrome-minimize"></span>
-                <span className="window-control icon-chrome-restore"></span>
-                <span className="window-control icon-chrome-close"></span>
-            </div>
+            {
+                props.isElectron && 
+                <div className="window-controls-container">
+                    <span className="window-control icon-chrome-minimize" onClick={minimizeWin}></span>
+                    <span className="window-control icon-chrome-restore" onClick={restoreWin}></span>
+                    <span className="window-control icon-chrome-close" onClick={closeWin}></span>
+                </div>
+            }
         </div>
     );
 
