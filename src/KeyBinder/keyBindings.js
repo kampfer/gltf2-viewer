@@ -6,4 +6,5 @@ export default [
     { key: 'W', command: 'renderer.setViewType', args: 'wireframe' },
     { key: 'Ctrl+O', command: 'open' },
     { key: 'Ctrl+Shift+O', command: 'openUrl' },
+    { key: 'Ctrl+Shift+I', command: 'openDevTools' },
 ];

@@ -4,7 +4,10 @@ const webpack = require('webpack');
 const electron = require('electron');
 const devConfig = require('./webpack.dev.config');
 
-devConfig.target = 'electron-renderer';
+Object.assign(devConfig, {
+    target: 'electron-renderer',
+    entry: path.join(__dirname, '../src/electron/renderer/index')
+});
 
 const compiler = webpack(devConfig);
 
@@ -22,4 +25,4 @@ compiler.watch({
     }));
 });
 
-spawn(electron, [path.join(__dirname, '../src/electron.js')], {env: { mode: 'development' }});
+spawn(electron, [path.join(__dirname, '../src/electron/main/index.js')], {env: { mode: 'development' }});

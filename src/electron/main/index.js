@@ -20,9 +20,7 @@ function createWindow () {
 
     // 加载index.html文件
     if (process.env.mode === 'development') {
-        win.loadFile('../build/web/index.html');
-        // 打开开发者工具
-        win.webContents.openDevTools();
+        win.loadFile('../../../build/web/index.html');
     } else {
         win.loadFile('./index.html');
     }
