@@ -24,7 +24,7 @@ fs.writeFileSync(appPackagePath, JSON.stringify(appPackage));
 
 // 拷贝electron入口文件
 fs.copyFileSync(
-    path.join(__dirname, '../src/electron.js'),
+    path.join(__dirname, '../src/electron/main/index.js'),
     path.join(webSourcePath, 'electron.js')
 );
 

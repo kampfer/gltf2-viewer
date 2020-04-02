@@ -11,6 +11,8 @@ Object.assign(devConfig, {
 
 const compiler = webpack(devConfig);
 
+let electronSpawned = false;
+
 compiler.watch({
     aggregateTimeout: 300
 }, function (err, stats) {
@@ -23,6 +25,10 @@ compiler.watch({
         chunks: false,  // Makes the build much quieter
         colors: true    // Shows colors in the console
     }));
-});
 
-spawn(electron, [path.join(__dirname, '../src/electron/main/index.js')], {env: { mode: 'development' }});
+    // 每次文件改变导致webpack重新编译时，不重新执行electron编译
+    if (electronSpawned === false) {
+        electronSpawned = true;
+        spawn(electron, [path.join(__dirname, '../src/electron/main/index.js')], {env: { mode: 'development' }});
+    }
+});
