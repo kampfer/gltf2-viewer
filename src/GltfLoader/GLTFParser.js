@@ -18,6 +18,7 @@ import {
 } from 'webglRenderEngine';
 import GLTFBinaryReader from './GLTFBinaryReader';
 import CameraHelper from './CameraHelper';
+import GLTFCubicSplineInterpolant from './GLTFCubicSplineInterpolant';
 
 const {
     LINEAR_INTERPOLATION,
@@ -292,6 +293,11 @@ export default class GLTFParser {
                     outputAccessor.array,
                     interpolationMap[sampler.interpolation]
                 );
+
+                if (sampler.interpolation === 'CUBICSPLINE') {
+                    track.interpolant = new GLTFCubicSplineInterpolant(track.times, track.values, track.getValueSize() / 3);
+                }
+
                 tracks.push(track);
             }
 
