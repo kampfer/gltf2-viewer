@@ -5,7 +5,8 @@
   "author": "https://github.com/kampfer",
   "license": "ISC",
   "scripts": {
-    "dev": "webpack-dev-server --config scripts/webpack.dev.config.js",
+    "start": "npm run dev:web",
+    "dev:web": "webpack-dev-server --config scripts/webpack.dev.config.js",
     "dev:electron": "node scripts/electronDev.js",
     "dev:style": "webpack-dev-server --config scripts/webpack.style.config.js",
     "example": "webpack-dev-server --config scripts/webpack.example.config.js",
