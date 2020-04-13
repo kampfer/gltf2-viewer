@@ -452,10 +452,24 @@ export default class GLTFParser {
     }
 
     parsePrimitive(primitive) {
-        let data = this._data,
-            attributes = primitive.attributes,
-            parsePromises = [],
-            geometry = new Geometry();
+
+        return Promise.all([
+            this.loadGeometry(primitive),
+            this._parse('material', primitive.material)
+        ]).then(([geometry, material]) => {
+            if (geometry.getAttribute('color') !== undefined) material.vertexColors = true;
+
+            let mesh = new Mesh(geometry, material);
+            mesh.drawMode = primitive.mode === undefined ? 4 : primitive.mode;
+
+            return mesh;
+        });
+    }
+
+    loadGeometry(primitive) {
+        let attributes = primitive.attributes,
+            geometry = new Geometry(),
+            parsePromises = [];
 
         for(let gltfAttributeName in attributes) {
             let attributeName = attributeNameMap[gltfAttributeName],    // 将gltf定义的attribute name映射到render engine定义的name
@@ -477,17 +491,76 @@ export default class GLTFParser {
             );
         }
 
-        return Promise.all(parsePromises)
-            .then(() => this._parse('material', primitive.material))
-            .then(function (material) {
-                if (geometry.getAttribute('color') !== undefined) {
-                    material.vertexColors = true;
-                }
+        return Promise.all(parsePromises).then(() => {
+            return primitive.targets !== undefined ? this.addMorphAttributes(geometry, primitive.targets) : geometry;
+        });
+    }
 
-                let mesh = new Mesh(geometry, material);
-                mesh.drawMode = primitive.mode === undefined ? 4 : primitive.mode;
-                return mesh;
-            });
+    // 暂时仅支持position和normal
+    // gltf文档中tangent的说明不完整，暂时搁置（https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#appendix-a-tangent-space-recalculation）。
+    addMorphAttributes(geometry, targets) {
+
+        let hasMorphPosition = false,
+            hasMorphNormal = false;
+
+        for(let i = 0, l = targets.length; i < l; i ++ ) {
+
+            let target = targets[i];
+
+            if (target.POSITION !== undefined) hasMorphPosition = true;
+            if (target.NORMAL !== undefined) hasMorphNormal = true;
+
+            if (hasMorphPosition && hasMorphNormal) break;
+
+        }
+
+        if (!hasMorphPosition && !hasMorphNormal) return Promise.resolve(geometry);
+
+        let pendingPositionAccessors = [],
+            pendingNormalAccessors = [];
+
+        for(let i = 0, l = targets.length; i < l; i ++ ) {
+
+            let target = targets[i];
+
+            if (hasMorphPosition) {
+
+                let pendingAccessor = target.POSITION !== undefined ?
+                    this._parse('accessor', target.POSITION) :
+                    geometry.attributes.position;
+
+                pendingPositionAccessors.push(pendingAccessor);
+
+            }
+
+            if (hasMorphNormal) {
+
+                let pendingAccessor = target.NORMAL !== undefined ?
+                    this._parse('accessor', target.NORMAL) :
+                    geometry.attributes.normal;
+
+                pendingNormalAccessors.push(pendingAccessor);
+
+            }
+
+        }
+
+        return Promise.all([
+            Promise.all(pendingPositionAccessors),
+            Promise.all(pendingNormalAccessors)
+        ]).then(function (accessors) {
+
+            let morphPositions = accessors[0],
+                morphNormals = accessors[1];
+
+            if (hasMorphPosition) geometry.setMorphAttrbute('position', morphPositions);
+            if (hasMorphNormal) geometry.setMorphAttrbute('normal', morphNormals);
+            geometry.morphTargetsRelative = true;
+
+            return geometry;
+
+        });
+
     }
 
     parseMaterial(materialIndex) {
