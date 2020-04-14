@@ -553,8 +553,8 @@ export default class GLTFParser {
             let morphPositions = accessors[0],
                 morphNormals = accessors[1];
 
-            if (hasMorphPosition) geometry.setMorphAttrbute('position', morphPositions);
-            if (hasMorphNormal) geometry.setMorphAttrbute('normal', morphNormals);
+            if (hasMorphPosition) geometry.setMorphAttribute('position', morphPositions);
+            if (hasMorphNormal) geometry.setMorphAttribute('normal', morphNormals);
             geometry.morphTargetsRelative = true;
 
             return geometry;
