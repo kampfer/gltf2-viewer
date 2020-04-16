@@ -457,7 +457,15 @@ export default class GLTFParser {
             this.loadGeometry(primitive),
             this._parse('material', primitive.material)
         ]).then(([geometry, material]) => {
-            if (geometry.getAttribute('color') !== undefined) material.vertexColors = true;
+
+            let useVertexColors = geometry.getAttribute('color') !== undefined,
+                morphAttributes = geometry.getMorphAttributes(),
+                useMorphTargets = Object.keys(morphAttributes).length > 0,
+                useMorphNormals = useMorphTargets && geometry.getMorphAttribute('normal') !== undefined;
+
+            material.vertexColors = useVertexColors;
+            material.morphTargets = useMorphTargets;
+            material.morphNormals = useMorphNormals;
 
             let mesh = new Mesh(geometry, material);
             mesh.drawMode = primitive.mode === undefined ? 4 : primitive.mode;
