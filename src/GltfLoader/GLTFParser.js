@@ -140,11 +140,17 @@ export default class GLTFParser {
     }
 
     parse(data) {
+
+        let retPromise;
+
         if (data instanceof ArrayBuffer) {
-            return this.parseArrayBuffer(data);
+            retPromise = this.parseArrayBuffer(data);
         } else {
-            return this.parseJson(data);
+            retPromise = this.parseJson(data);
         }
+
+        return retPromise.catch(error => console.error(error));
+
     }
 
     parseArrayBuffer(data) {
@@ -455,7 +461,11 @@ export default class GLTFParser {
 
         return Promise.all([
             this.loadGeometry(primitive),
-            this._parse('material', primitive.material)
+            // 相同索引的material可能因为配对的geometry的不同，而采用不同配置。
+            // 所以相同索引的material不能简单的返回同一个实例，这可能造成混乱。
+            // 这里不使用走缓存的this._parse('material', primitive.material)方法
+            // this._parse('material', primitive.material)
+            this.parseMaterial(primitive.material)
         ]).then(([geometry, material]) => {
 
             let useVertexColors = geometry.getAttribute('color') !== undefined,
