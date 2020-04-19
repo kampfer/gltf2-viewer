@@ -14,7 +14,10 @@ import {
     QuaternionKeyFrameTrack,
     constants,
     Color,
-    Group
+    Group,
+    Skeleton,
+    Bone,
+    SkinnedMesh,
 } from 'webglRenderEngine';
 import GLTFBinaryReader from './GLTFBinaryReader';
 import CameraHelper from './CameraHelper';
@@ -26,6 +29,7 @@ const {
     CUBIC_SPLINE_INTERPOLATION,
     OBJECT_TYPE_PERSPECTIVE_CAMERA,
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
+    OBJECT_TYPE_MESH,
 } = constants;
 
 const attributeNameMap = {
@@ -93,6 +97,8 @@ export default class GLTFParser {
     reset(data, type) {
         this._cache = {};
         this._data = data;
+        this._meshReferences = null;
+        this._meshUses = null;
         this._type = type;
     }
 
@@ -128,6 +134,9 @@ export default class GLTFParser {
                     break;
                 case 'animation':
                     parsePromise = this.parseAnimation(index);
+                    break;
+                case 'skin':
+                    parsePromise = this.parseSkin(index);
                     break;
                 default:
                     console.warn('GLTFParser：不支持的属性类型：' + type);
@@ -166,6 +175,8 @@ export default class GLTFParser {
         // 重置所有属性（主要是缓存，以及gltf数据）
         this.reset(data, DATA_TYPE.GLB);
 
+        this.markDefs();
+
         return Promise.all([
             this.parseScenes(),
             this.parseAnimations(),
@@ -183,8 +194,11 @@ export default class GLTFParser {
 
     parseJson(data) {
         console.log('glTF Data:', data);
+
         // 重置所有属性（主要是缓存，以及gltf数据）
         this.reset(data, DATA_TYPE.GLTF);
+
+        this.markDefs();
 
         return Promise.all([
             this.parseScenes(),
@@ -199,6 +213,61 @@ export default class GLTFParser {
                 animations
             };
         });
+    }
+
+    markDefs() {
+
+        let data = this._data,
+            nodeDefs = data.nodes,
+            meshDefs = data.meshes,
+            skinDefs = data.skins;
+
+        // 在joints数组中的node都是bone
+        for(let i = 0, l = skinDefs.length; i < l; i++) {
+
+            let skeleton = skinDefs[i],
+                joints = skeleton.joints;
+
+            for(let ii = 0, ll = joints.length; ii < ll; ii++) {
+
+                let joint = joints[ii];
+
+                nodeDefs[joint].isBone = true;
+
+            }
+
+        }
+
+        let meshReferences = {},    // 记录mesh的引用次数，次数大于1的mesh不走缓存
+            meshUses = {};  // 记录mesh实例化的次数，用于生成名称
+
+        for(let i = 0, l = nodeDefs.length; i < l; i++) {
+
+            let nodeDef = nodeDefs[i];
+
+            if (nodeDef.mesh !== undefined) {
+
+                let mesh = nodeDef.mesh;
+
+                if (meshReferences[mesh] === undefined) {
+
+                    meshUses[mesh] = 0;
+                    meshReferences[mesh] = 0;
+
+                }
+
+                meshReferences[mesh]++;
+
+                // 标记skinnedMesh
+                if (nodeDef.skin !== undefined) meshDefs[mesh].isSkinnedMesh = true;
+
+            }
+
+        }
+
+        this._meshReferences = meshReferences;
+        this._meshUses = meshUses;
+
     }
 
     parseScenes() {
@@ -312,19 +381,52 @@ export default class GLTFParser {
         });
     }
 
+    _buildNodeHierachy(index, parent) {
+
+        let data = this._data,
+            nodeDef = data.nodes[index],
+            children = nodeDef.children;
+
+        return this._parse('node', index).then((node) => {
+
+            parent.add(node);
+
+            if (children) {
+
+                for(let i = 0, l = children.length; i < l; i++) {
+
+                    this._buildNodeHierachy(children[i], node);
+
+                }
+
+            }
+
+            return node;
+
+        })
+        // .then((node) => {
+
+        //     if (nodeDef.skin === undefined) return node;
+
+        //     return this._parse('skin', nodeDef.skin).then((skin) => {
+
+        //     });
+
+        // });
+
+    }
+
     parseScene(sceneIndex) {
+
         let data = this._data,
             sceneDef = data.scenes[sceneIndex],
-            nodeDefs = sceneDef.nodes;
+            nodeDefs = sceneDef.nodes,
+            scene = new Scene();
+
         return Promise.all(
-            nodeDefs.map(nodeIndex => this._parse('node', nodeIndex))
-        ).then((nodes) => {
-            let scene = new Scene();
-            nodes.forEach((node) => {
-                scene.add(node);
-            });
-            return scene;
-        });
+            nodeDefs.map(nodeIndex => this._buildNodeHierachy(nodeIndex, scene))
+        ).then(() => scene);
+
     }
 
     parseNode(nodeIndex) {
@@ -333,7 +435,55 @@ export default class GLTFParser {
             parsePromises = [];
 
         if (nodeDef.mesh !== undefined) {
-            parsePromises.push(this._parse('mesh', nodeDef.mesh));
+
+            parsePromises.push(
+
+                this._parse('mesh', nodeDef.mesh).then((mesh) => {
+
+                    let meshReferences = this._meshReferences,
+                        meshUses = this._meshUses,
+                        node = mesh;
+
+                    if (meshReferences[nodeDef.mesh] > 1) {
+
+                        let instanceNum = meshUses[nodeDef.mesh];
+
+                        // 被不同nodeDef引用的mesh不能使用缓存，需要返回独立的深拷贝副本。
+                        // 另外需要给副本的name添加`_instance_${instanceNum}`后缀，方便区分。
+                        node = mesh.clone();
+                        node.name += `_instance_${instanceNum}`;
+
+                        for(let i = 0, l = node.children.length; i < l; i++) {
+
+                            node.children[i].name += `_instance_${instanceNum}`;
+
+                        }
+
+                    }
+
+                    // 如果gltf提供了nodeDef.weights，那么需要将node.weights复制到node对应的所有mesh。
+                    if (nodeDef.weights !== undefined) {
+
+                        // mesh可能有多个primitive，所以这里需要遍历节点。
+                        node.traverse((child) => {
+
+                            if (child.type !== OBJECT_TYPE_MESH) return;
+
+                            for(let i = 0, l = nodeDef.weights.length; i < l; i++) {
+
+                                child.morphTargetInfluences[i] = nodeDef.weights[i];
+
+                            }
+
+                        })
+
+                    }
+
+                    return node;
+
+                })
+
+            );
         }
 
         if (nodeDef.camera !== undefined) {
@@ -342,36 +492,45 @@ export default class GLTFParser {
 
         return Promise.all(parsePromises)
             .then((objects) => {
+
                 let object;
-                if (objects.length === 0) { // 只有children没有mesh或者camera
-                    object = new Group();
-                    object.name = nodeDef.name || `group_${nodeIndex}`;
+
+                if (nodeDef.isBone) {
+
+                    object = new Bone();
+
                 } else if (objects.length === 1) {
+
                     object = objects[0];
-                    if (object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
-                        object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-                            object = new CameraHelper(object);
-                    } else {
-                        // mesh可以被node共用，但是node的transform（matrix、translation等等）可能不一样
-                        // 所以这里需要再将mesh当作node返回之前，可能一次节点，保证transform不被覆盖
-                        //
-                        // parse mesh可能返回mesh或mesh的列表，所以不能直接用type===mash判断是否为mesh
-                        // 这里只要不是相机就克隆节点
-                        object = object.clone();
+
+                    if (
+                        object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
+                        object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA
+                    ) {
+                        object = new CameraHelper(object);
                     }
-                } else if (objects.length > 1) {    // 同时包含mesh和camera（应该不存在这种情况）
+
+                } else if (objects.length > 1) {
+ 
+                    object = new Group();
+
+                } else {
+
                     object = new GraphObject();
-                    objects.forEach((childObject) => {
-                        if (childObject.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
-                            childObject.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA) {
-                            //
-                        } else {
-                            childObject = childObject[0].clone();
-                        }
-                        object.add(childObject);
-                    });
-                    object.name = nodeDef.name || `mesh&camera_${nodeIndex}`;
+
                 }
+
+                if (object !== objects[0]) {
+
+                    for(let i = 0, l = objects.length; i < l; i++) {
+
+                        object.add(objects[i]);
+
+                    }
+
+                }
+
+                if (nodeDef.name !== undefined) object.name = nodeDef.name;
 
                 if (nodeDef.matrix) {
                     let matrix = new Mat4(nodeDef.matrix);
@@ -391,49 +550,89 @@ export default class GLTFParser {
                 }
 
                 return object;
-            })
-            .then((object) => {
-                if(nodeDef.children !== undefined) {
-                    return Promise.all(
-                        nodeDef.children.map(childNodeIndex => this._parse('node', childNodeIndex))
-                    )
-                    .then((childObjects) => {
-                        childObjects.forEach((childObject) => {
-                            object.add(childObject);
-                        });
-                        return object;
-                    });
-                }
-                return object;
             });
     }
 
-    // 如果primitives是空数组，返回一个GraphObject实例
-    // 如果primitives仅有1个元素，返回该元素
-    // 如果primitives包含1个以上的元素，返回一个GraphObject实例，所有元素都是GraphObject实例的子元素
+    parseSkin(index) {}
+
     parseMesh(meshIndex) {
+
         let data = this._data,
             meshDef = data.meshes[meshIndex],
-            primitives = meshDef.primitives;
-        return Promise.all(
-            primitives.map(primitive => this.parsePrimitive(primitive))
-        ).then((objects) => {
-            let object,
-                name = meshDef.name ? meshDef.name : `mesh_${meshIndex}`;
-            if (objects.length === 0) {
-                object = new GraphObject();
-            } else if (objects.length === 1) {
-                object = objects[0];
-            } else {
-                object = new Group();
-                objects.forEach((childObject, i) => {
-                    childObject.name = `${name}_primitive_${i}`;
-                    object.add(childObject);
-                });
-            }
-            object.name = name;
-            return object;
-        });
+            primitives = meshDef.primitives,
+            parsePromises = [],
+            materialParsePromises = [];
+
+        parsePromises.push(
+            Promise.all(primitives.map(primitive => this.loadGeometry(primitive)))
+        );
+
+        for(let i = 0, l = primitives.length; i < l; i++) {
+
+            materialParsePromises.push(this.parseMaterial(primitives[i].material));
+
+        }
+
+        parsePromises.push(materialParsePromises);
+
+        return Promise.all(parsePromises)
+            .then(([geometries, materials]) => {
+
+                let meshes = [];
+
+                for(let i = 0, l = geometries.length; i < l; i++) {
+
+                    let geometry = geometries[i],
+                        primitive = primitives[i],
+                        material = materials[i],
+                        mesh;
+
+                    switch(primitive.mode) {
+                        case constants.GL_DRAW_MODE_TRIANGLES:
+                            mesh = meshDef.isSkinnedMesh ?
+                                new SkinnedMesh(geometry, material) :
+                                new Mesh(geometry, material);
+                            break;
+                        case constants.GL_DRAW_MODE_TRIANGLE_STRIP:
+                        case constants.GL_DRAW_MODE_TRIANGLE_FAN:
+                        case constants.GL_DRAW_MODE_LINES:
+                        case constants.GL_DRAW_MODE_LINE_STRIP:
+                        case constants.GL_DRAW_MODE_LINE_LOOP:
+                        case constants.GL_DRAW_MODE_POINTS:
+                        default:
+                            console.warn(`不支持的primitive.mode类型：${primitive.mode}`);
+                    }
+
+                    let useVertexColors = geometry.getAttribute('color') !== undefined,
+                        morphAttributes = geometry.getMorphAttributes(),
+                        useMorphTargets = Object.keys(morphAttributes).length > 0,
+                        useMorphNormals = useMorphTargets && geometry.getMorphAttribute('normal') !== undefined;
+
+                    material.vertexColors = useVertexColors;
+                    material.morphTargets = useMorphTargets;
+                    material.morphNormals = useMorphNormals;
+
+                    mesh.name = meshDef.name || `mesh_${meshIndex}`;
+                    if (geometries.length > 1) mesh.name += `_${i}`;
+
+                    meshes.push(mesh);
+
+                }
+
+                if (meshes.length === 1) return meshes[0];
+
+                let group = new Group();
+
+                for(let i = 0, l = meshes.length; i < l; i++) {
+
+                    group.add(meshes[i]);
+
+                }
+
+                return group;
+
+            });
+
     }
 
     parseCamera(cameraIndex) {
@@ -457,33 +656,7 @@ export default class GLTFParser {
         return camera;
     }
 
-    parsePrimitive(primitive) {
-
-        return Promise.all([
-            this.loadGeometry(primitive),
-            // 相同索引的material可能因为配对的geometry的不同，而采用不同配置。
-            // 所以相同索引的material不能简单的返回同一个实例，这可能造成混乱。
-            // 这里不使用走缓存的this._parse('material', primitive.material)方法
-            // this._parse('material', primitive.material)
-            this.parseMaterial(primitive.material)
-        ]).then(([geometry, material]) => {
-
-            let useVertexColors = geometry.getAttribute('color') !== undefined,
-                morphAttributes = geometry.getMorphAttributes(),
-                useMorphTargets = Object.keys(morphAttributes).length > 0,
-                useMorphNormals = useMorphTargets && geometry.getMorphAttribute('normal') !== undefined;
-
-            material.vertexColors = useVertexColors;
-            material.morphTargets = useMorphTargets;
-            material.morphNormals = useMorphNormals;
-
-            let mesh = new Mesh(geometry, material);
-            mesh.drawMode = primitive.mode === undefined ? 4 : primitive.mode;
-
-            return mesh;
-        });
-    }
-
+    // geometry不走缓存
     loadGeometry(primitive) {
         let attributes = primitive.attributes,
             geometry = new Geometry(),

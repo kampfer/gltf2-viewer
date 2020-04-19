@@ -95,14 +95,14 @@ export default class App extends React.Component {
     open() {
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
-            gltfLoader.open().then(this.renderGltf, function () {});
+            gltfLoader.open().then(this.renderGltf);
         }
     }
 
     openUrl() {
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
-            gltfLoader.openUrl().then(this.renderGltf, function () {});
+            gltfLoader.openUrl().then(this.renderGltf);
         }
     }
 
