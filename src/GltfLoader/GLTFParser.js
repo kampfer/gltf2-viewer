@@ -30,6 +30,7 @@ const {
     OBJECT_TYPE_PERSPECTIVE_CAMERA,
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
     OBJECT_TYPE_MESH,
+    OBJECT_TYPE_SKINNED_MESH,
 } = constants;
 
 const attributeNameMap = {
@@ -403,16 +404,7 @@ export default class GLTFParser {
 
             return node;
 
-        })
-        // .then((node) => {
-
-        //     if (nodeDef.skin === undefined) return node;
-
-        //     return this._parse('skin', nodeDef.skin).then((skin) => {
-
-        //     });
-
-        // });
+        });
 
     }
 
@@ -490,70 +482,106 @@ export default class GLTFParser {
             parsePromises.push(this._parse('camera', nodeDef.camera));
         }
 
-        return Promise.all(parsePromises)
-            .then((objects) => {
+        return Promise.all(parsePromises).then((objects) => {
 
-                let object;
+            let object;
 
-                if (nodeDef.isBone) {
+            if (nodeDef.isBone) {
 
-                    object = new Bone();
+                object = new Bone();
 
-                } else if (objects.length === 1) {
+            } else if (objects.length === 1) {
 
-                    object = objects[0];
+                object = objects[0];
 
-                    if (
-                        object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
-                        object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA
-                    ) {
-                        object = new CameraHelper(object);
-                    }
+                if (
+                    object.type === OBJECT_TYPE_PERSPECTIVE_CAMERA ||
+                    object.type === OBJECT_TYPE_ORTHOGRAPHIC_CAMERA
+                ) {
+                    object = new CameraHelper(object);
+                }
 
-                } else if (objects.length > 1) {
- 
-                    object = new Group();
+            } else if (objects.length > 1) {
 
-                } else {
+                object = new Group();
 
-                    object = new GraphObject();
+            } else {
+
+                object = new GraphObject();
+
+            }
+
+            if (object !== objects[0]) {
+
+                for(let i = 0, l = objects.length; i < l; i++) {
+
+                    object.add(objects[i]);
 
                 }
 
-                if (object !== objects[0]) {
+            }
 
-                    for(let i = 0, l = objects.length; i < l; i++) {
+            if (nodeDef.name !== undefined) object.name = nodeDef.name;
 
-                        object.add(objects[i]);
-
-                    }
-
+            if (nodeDef.matrix) {
+                let matrix = new Mat4(nodeDef.matrix);
+                object.applyMatrix(matrix);
+            } else {
+                if (nodeDef.translation) {
+                    object.position.setFromArray(nodeDef.translation);
                 }
 
-                if (nodeDef.name !== undefined) object.name = nodeDef.name;
-
-                if (nodeDef.matrix) {
-                    let matrix = new Mat4(nodeDef.matrix);
-                    object.applyMatrix(matrix);
-                } else {
-                    if (nodeDef.translation) {
-                        object.position.setFromArray(nodeDef.translation);
-                    }
-
-                    if (nodeDef.rotation) {
-                        object.quaternion.setFromArray(nodeDef.rotation);
-                    }
-
-                    if (nodeDef.scale) {
-                        object.scale.setFromArray(nodeDef.scale);
-                    }
+                if (nodeDef.rotation) {
+                    object.quaternion.setFromArray(nodeDef.rotation);
                 }
 
-                return object;
+                if (nodeDef.scale) {
+                    object.scale.setFromArray(nodeDef.scale);
+                }
+            }
+
+            return object;
+        }).then((node) => {
+
+            if (nodeDef.skin === undefined) return node;
+
+            return this._parse('skin', nodeDef.skin).then((skin) => {
+
+                node.traverse((child) => {
+
+                    if (child.type !== OBJECT_TYPE_SKINNED_MESH) return;
+
+                    console.log(child.name, child.uid, skin);
+
+                    child.bind(new Skeleton());
+
+                });
+
+                return node;
+
             });
+
+        });
+
     }
 
-    parseSkin(index) {}
+    parseSkin(index) {
+
+        let skinDef = this._data.skins[index];
+
+        return Promise.all([
+
+            Promise.all(skinDef.joints.map(joint => this._parse('node', joint))),
+
+            skinDef.inverseBindMatrices ? this._parse('accessor', skinDef.inverseBindMatrices) : null,
+
+        ]).then(([jointNodes, inverseBindMatrices]) => {
+
+            return { inverseBindMatrices, jointNodes };
+
+        });
+
+    }
 
     parseMesh(meshIndex) {
 
