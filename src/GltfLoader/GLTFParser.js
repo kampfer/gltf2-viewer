@@ -33,6 +33,7 @@ const {
     OBJECT_TYPE_SKINNED_MESH,
 } = constants;
 
+// 将gltf中的attribute的名称映射为渲染引擎的geometry对象存储attribute的名称
 const attributeNameMap = {
     'POSITION': 'position',
     'NORMAL': 'normal',
@@ -547,13 +548,38 @@ export default class GLTFParser {
 
             return this._parse('skin', nodeDef.skin).then((skin) => {
 
-                node.traverse((child) => {
+                let jointNodes = skin.jointNodes;
 
-                    if (child.type !== OBJECT_TYPE_SKINNED_MESH) return;
+                node.traverse((mesh) => {
 
-                    console.log(child.name, child.uid, skin);
+                    if (mesh.type !== OBJECT_TYPE_SKINNED_MESH) return;
 
-                    child.bind(new Skeleton());
+                    let bones = [],
+                        inverseBones = [];
+
+                    for( let i = 0, l = jointNodes.length; i < l; i++) {
+
+                        let jointNode = jointNodes[i];
+
+                        if (jointNode) {
+
+                            bones.push(jointNode);
+
+                            let mat4 = new Mat4();
+
+                            if (skin.inverseBindMatrices !== undefined) {
+
+                                mat4.setFromArray(skin.inverseBindMatrices.array, i * 16);
+
+                            }
+
+                            inverseBones.push(mat4);
+
+                        }
+
+                    }
+
+                    mesh.bind(new Skeleton(bones, inverseBones));
 
                 });
 
@@ -616,22 +642,26 @@ export default class GLTFParser {
                         mesh;
 
                     switch(primitive.mode) {
-                        case constants.GL_DRAW_MODE_TRIANGLES:
-                            mesh = meshDef.isSkinnedMesh ?
-                                new SkinnedMesh(geometry, material) :
-                                new Mesh(geometry, material);
-                            break;
                         case constants.GL_DRAW_MODE_TRIANGLE_STRIP:
                         case constants.GL_DRAW_MODE_TRIANGLE_FAN:
                         case constants.GL_DRAW_MODE_LINES:
                         case constants.GL_DRAW_MODE_LINE_STRIP:
                         case constants.GL_DRAW_MODE_LINE_LOOP:
                         case constants.GL_DRAW_MODE_POINTS:
+                        case constants.GL_DRAW_MODE_TRIANGLES:
                         default:
-                            console.warn(`不支持的primitive.mode类型：${primitive.mode}`);
+                            mesh = meshDef.isSkinnedMesh ?
+                                new SkinnedMesh(geometry, material) :
+                                new Mesh(geometry, material);
                     }
 
+                    if (mesh.type === OBJECT_TYPE_SKINNED_MESH && !mesh.geometry.getAttribute('skinWeight').normalized) {
+                        mesh.normalizeSkinWeights();
+                    }
+
+                    // material配置
                     let useVertexColors = geometry.getAttribute('color') !== undefined,
+                        useSkinning = meshDef.isSkinnedMesh === true,
                         morphAttributes = geometry.getMorphAttributes(),
                         useMorphTargets = Object.keys(morphAttributes).length > 0,
                         useMorphNormals = useMorphTargets && geometry.getMorphAttribute('normal') !== undefined;
@@ -639,6 +669,7 @@ export default class GLTFParser {
                     material.vertexColors = useVertexColors;
                     material.morphTargets = useMorphTargets;
                     material.morphNormals = useMorphNormals;
+                    material.skinning = useSkinning;
 
                     mesh.name = meshDef.name || `mesh_${meshIndex}`;
                     if (geometries.length > 1) mesh.name += `_${i}`;
