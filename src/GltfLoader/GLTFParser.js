@@ -222,7 +222,7 @@ export default class GLTFParser {
         let data = this._data,
             nodeDefs = data.nodes,
             meshDefs = data.meshes,
-            skinDefs = data.skins;
+            skinDefs = data.skins || [];
 
         // 在joints数组中的node都是bone
         for(let i = 0, l = skinDefs.length; i < l; i++) {
@@ -920,8 +920,7 @@ export default class GLTFParser {
 
         if (execRet) {
             let content = execRet[3],
-                isBase64 = !!execRet[2],
-                type = execRet[1];
+                isBase64 = !!execRet[2];
 
             content = decodeURIComponent(content);
             if (isBase64) {
