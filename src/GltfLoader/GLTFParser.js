@@ -579,7 +579,7 @@ export default class GLTFParser {
 
                     }
 
-                    mesh.bind(new Skeleton(bones, inverseBones));
+                    mesh.bind(new Skeleton(bones, inverseBones), mesh.worldMatrix);
 
                 });
 
