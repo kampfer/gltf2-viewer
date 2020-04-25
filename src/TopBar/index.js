@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import CommandBar from '../ui/CommandBar';
 import { MenuItemType } from '../ui/Menu';
 import { commandManager } from '../commands';
 import { constants } from 'webglRenderEngine';
-import { EnvContext } from '../App/contexts';
+import { EnvContext, AppStateContext } from '../App/contexts';
 
 import './index.less';
 
@@ -22,6 +22,11 @@ function restoreWin() {
 }
 
 export default function TopBar(props) {
+
+    const { gltf, playAnimation, stopAnimation } = useContext(AppStateContext);
+
+    let separatorNum = 0,
+        hasAnimations = gltf && gltf.animations && gltf.animations.length > 0;
 
     const items = [
         {
@@ -46,8 +51,30 @@ export default function TopBar(props) {
                         },
                         canCheck: false,
                     }, {
-                        key: 'separator_1',
+                        key: `separator_${separatorNum++}`,
                         itemType: MenuItemType.separator
+                    }, {
+                        key: 'selectAnimation',
+                        text: '选择动画',
+                        disabled: !hasAnimations,
+                        subMenuProps: hasAnimations ? {
+                            items: gltf.animations.map(clip => ({
+                                canCheck: true,
+                                isChecked: clip.isActivated(),
+                                key: clip.uid,
+                                text: clip.name,
+                                onClick: () => {
+                                    if (clip.isActivated) {
+                                        playAnimation(clip);
+                                    } else {
+                                        stopAnimation(clip);
+                                    }
+                                },
+                            }))
+                        } : null,
+                    }, {
+                            key: `separator_${separatorNum++}`,
+                            itemType: MenuItemType.separator
                     }, {
                         key: 'setPerspectiveCamera',
                         text: 'Perspective相机',
@@ -67,7 +94,7 @@ export default function TopBar(props) {
                         canCheck: true,
                         isChecked: props.activeCameraType === constants.OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
                     }, {
-                        key: 'separator_2',
+                        key: `separator_${separatorNum++}`,
                         itemType: MenuItemType.separator
                     }, {
                         key: 'setMeshView',
@@ -100,12 +127,12 @@ export default function TopBar(props) {
             <h1 className="app-title">GlTF2 Viewer</h1>
             <EnvContext.Consumer>
             {
-                (ENV) => ENV === 'electron' && 
+                (ENV) => (ENV === 'electron' && 
                 <div className="window-controls-container">
                     <span className="window-control icon-chrome-minimize" onClick={minimizeWin}></span>
                     <span className="window-control icon-chrome-restore" onClick={restoreWin}></span>
                     <span className="window-control icon-chrome-close" onClick={closeWin}></span>
-                </div>
+                </div>)
             }
             </EnvContext.Consumer>
         </div>

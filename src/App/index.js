@@ -13,6 +13,7 @@ import KeyBinder from '../KeyBinder';
 import { commandManager } from '../commands';
 import { constants } from 'webglRenderEngine';
 import KeyBindingTip from './KeybindingTip';
+import { AppStateContext } from './contexts';
 
 import './index.less';
 
@@ -28,6 +29,9 @@ export default class App extends React.Component {
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
             viewType: 'mesh',
             hideFileReader: false,
+            activatedAnimationClips: [],
+            playAnimation: this.playAnimation.bind(this),
+            stopAnimation: this.stopAnimation.bind(this),
             ...this.calculateLayout(),
         };
 
@@ -57,6 +61,9 @@ export default class App extends React.Component {
             hideFileReader: true,
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
             viewType: 'mesh',
+            activatedAnimationClips: []
+        }, () => {
+            if (gltf.animations && gltf.animations.length > 0) this.playAnimation(gltf.animations[0]);
         });
     }
 
@@ -73,6 +80,26 @@ export default class App extends React.Component {
         let gltfLoader = this.gltfLoaderRef.current;
         if (gltfLoader) {
             gltfLoader.loadGltfFromFiles(e.dataTransfer.files).then(this.renderGltf);
+        }
+    }
+
+    playAnimation(clip) {
+        let renderer = this.rendererRef.current;
+        if (renderer) {
+            renderer.playClip(clip);
+            let activatedAnimationClips = this.state.activatedAnimationClips;
+            this.setState({activatedAnimationClips: [...activatedAnimationClips, clip]});
+        }
+    }
+
+    stopAnimation(clip) {
+        let renderer = this.rendererRef.current;
+        if (renderer) {
+            renderer.stopClip(clip);
+            let activatedAnimationClips = this.state.activatedAnimationClips;
+            let index = activatedAnimationClips.indexOf(clip);
+            if (index >= 0) activatedAnimationClips.splice(index, 1);
+            this.setState({activatedAnimationClips: [...activatedAnimationClips]});
         }
     }
 
@@ -177,61 +204,64 @@ export default class App extends React.Component {
             selectedNode = state.selectedNode;
 
         return (
-            <KeyBinder>
-                <GridContainer vertical>
-                    <Grid>
-                        <TopBar activeCameraType={state.activeCameraType} viewType={state.viewType}></TopBar>
-                    </Grid>
-                    <Grid flexGrow={1}>
-                        <GridContainer>
-                            <Grid width={state.sideBarLayout.width}>
-                                <ResizeHelper resizeX onResize={this.changeSideBarWidth}>
-                                    <GridContainer vertical>
-                                        <Grid>
-                                            <ResizeHelper resizeY onResize={this.changeNodeViewerHeight}>
-                                                <GltfNodeViewer height={state.nodeViewerLayout.height}
+            <AppStateContext.Provider value={state}>
+                <KeyBinder>
+                    <GridContainer vertical>
+                        <Grid>
+                            <TopBar activeCameraType={state.activeCameraType} viewType={state.viewType}></TopBar>
+                        </Grid>
+                        <Grid flexGrow={1}>
+                            <GridContainer>
+                                <Grid width={state.sideBarLayout.width}>
+                                    <ResizeHelper resizeX onResize={this.changeSideBarWidth}>
+                                        <GridContainer vertical>
+                                            <Grid>
+                                                <ResizeHelper resizeY onResize={this.changeNodeViewerHeight}>
+                                                    <GltfNodeViewer height={state.nodeViewerLayout.height}
+                                                        gltf={state.gltf}
+                                                        onSelectNode={this.setSelectedNode}
+                                                        selectedNode={selectedNode}
+                                                    ></GltfNodeViewer>
+                                                </ResizeHelper>
+                                            </Grid>
+                                            <Grid flexGrow={1}>
+                                                <GltfNodePropertyViewer
                                                     gltf={state.gltf}
-                                                    onSelectNode={this.setSelectedNode}
                                                     selectedNode={selectedNode}
-                                                ></GltfNodeViewer>
-                                            </ResizeHelper>
-                                        </Grid>
-                                        <Grid flexGrow={1}>
-                                            <GltfNodePropertyViewer
-                                                gltf={state.gltf}
-                                                selectedNode={selectedNode}
-                                                height={state.nodePropertyViewerLayout.height}
-                                            ></GltfNodePropertyViewer>
-                                        </Grid>
-                                    </GridContainer>
-                                </ResizeHelper>
-                            </Grid>
-                            <Grid flexGrow={1}>
-                                <div onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
-                                    { !state.gltf && <KeyBindingTip></KeyBindingTip> }
-                                    { state.showFPS && <Stats ref={this.stats} right={5} top={30 + 3 + 3} /> }
-                                    <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
-                                    <GltfRenderer
-                                        ref={this.rendererRef}
-                                        gltf={state.gltf}
-                                        selectedNode={state.selectedNode}
-                                        hide={this.state.hideGltfRenderer}
-                                        beforeRender={ state.showFPS && (() => this.stats.current.begin()) }
-                                        afterRender={ state.showFPS && (() => this.stats.current.end()) }
-                                        width={state.rendererLayout.width}
-                                        height={state.rendererLayout.height}
-                                        activeCameraType={state.activeCameraType}
-                                        viewType={state.viewType}
-                                    />
-                                </div>
-                            </Grid>
-                        </GridContainer>
-                    </Grid>
-                    <Grid>
-                        <StatusBar gltf={gltf}></StatusBar>
-                    </Grid>
-                </GridContainer>
-            </KeyBinder>
+                                                    height={state.nodePropertyViewerLayout.height}
+                                                ></GltfNodePropertyViewer>
+                                            </Grid>
+                                        </GridContainer>
+                                    </ResizeHelper>
+                                </Grid>
+                                <Grid flexGrow={1}>
+                                    <div onDrop={this.handleDrop} onDragOver={this.handleDropOver}>
+                                        { !state.gltf && <KeyBindingTip></KeyBindingTip> }
+                                        { state.showFPS && <Stats ref={this.stats} right={5} top={30 + 3 + 3} /> }
+                                        <GltfLoader ref={this.gltfLoaderRef} onSuccess={this.renderGltf} hide={this.state.hideFileReader} />
+                                        <GltfRenderer
+                                            ref={this.rendererRef}
+                                            gltf={state.gltf}
+                                            selectedNode={state.selectedNode}
+                                            hide={this.state.hideGltfRenderer}
+                                            beforeRender={ state.showFPS && (() => this.stats.current.begin()) }
+                                            afterRender={ state.showFPS && (() => this.stats.current.end()) }
+                                            width={state.rendererLayout.width}
+                                            height={state.rendererLayout.height}
+                                            activeCameraType={state.activeCameraType}
+                                            viewType={state.viewType}
+                                            activatedAnimationClips={state.activatedAnimationClips}
+                                        />
+                                    </div>
+                                </Grid>
+                            </GridContainer>
+                        </Grid>
+                        <Grid>
+                            <StatusBar gltf={gltf}></StatusBar>
+                        </Grid>
+                    </GridContainer>
+                </KeyBinder>
+            </AppStateContext.Provider>
         );
 
     }

@@ -95,6 +95,14 @@ export default class GltfRenderer extends React.Component {
         this._clock.start();
     }
 
+    playClip(clip) {
+        if (this._mixer) this._mixer.playClip(clip);
+    }
+
+    stopClip(clip) {
+        if (this._mixer) this._mixer.stopClip(clip);
+    }
+
     renderGltf(gltf, cameraType) {
         console.log('gltf:', gltf);
 
@@ -163,9 +171,12 @@ export default class GltfRenderer extends React.Component {
 
         // 动画
         if (gltf.animations && gltf.animations.length > 0) {
-            this._mixer = new AnimationMixer([gltf.animations[0]]);
+
+            this._mixer = new AnimationMixer(gltf.animations);
+
             // 计时器
             this._clock = new Clock();
+
         }
 
         // 根据scene的尺寸计算cameraHelper的尺寸
@@ -217,6 +228,9 @@ export default class GltfRenderer extends React.Component {
                 this.stopRender();
                 this.webglRenderer.setViewport(0, 0, props.width, props.height);
                 this.renderGltf(gltf, props.activeCameraType);
+                for(let i = 0, l = props.activatedAnimationClips.length; i < l; i++) {
+                    this._mixer.playClip(props.activatedAnimationClips[i]);
+                }
             }
         }, 100);
     }
@@ -243,9 +257,18 @@ export default class GltfRenderer extends React.Component {
 
         if (prevProps.gltf !== props.gltf) {
             this.startRenderLater();
-        } else if (prevProps.width !== props.width || prevProps.height !== props.height) {
+        }
+        
+        if (prevProps.width !== props.width || prevProps.height !== props.height) {
             this.webglRenderer.setViewport(0, 0, props.width, props.height);
         }
+        
+        // if (prevProps.activatedAnimationClips !== props.activatedAnimationClips) {
+        //     this._mixer.stopAllClips();
+        //     for(let i = 0, l = props.activatedAnimationClips.length; i < l; i++) {
+        //         this._mixer.playClip(props.activatedAnimationClips[i]);
+        //     }
+        // }
     }
 
     render() {
