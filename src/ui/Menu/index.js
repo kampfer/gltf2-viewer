@@ -6,18 +6,54 @@ import './index.less';
 
 function MenuItem(props) {
 
-    let handleClick = function (e) {
-        if (props.onClick) props.onClick(e, {key: props.uKey});
+    let subMenuProps = props.subMenuProps;
+
+    const [showSubMenu, setShowSubMenu] = React.useState(false);
+    const [subMenuPosition, setSubMenuPosition] = React.useState();
+    const itemRef = React.createRef();
+
+    const calculateSubMenuPosition = React.useCallback(() => {
+
+        const bounding = itemRef.current.getBoundingClientRect();
+        const position = { left: bounding.right, top: bounding.top };
+
+        return position;
+
+    }, [subMenuProps]);
+
+    const handleClick = function (e) {
+
+        if (subMenuProps) {
+
+            let subMenuPosition = calculateSubMenuPosition();
+
+            setShowSubMenu(!showSubMenu);
+            setSubMenuPosition(subMenuPosition);
+
+        }
+
+        if (props.disabled || subMenuProps) e.stopPropagation();
+        if (!props.disabled && props.onClick) props.onClick(e, {key: props.uKey});
     };
 
+    const className = ['menu-item'];
+
+    if (props.disabled) className.push('disabled');
+    if (subMenuProps) className.push('with-sub-menu');
+    if (props.checked) className.push('checked');
+
     return (
-        <li className="menu-item" onClick={handleClick}>
-            <span className={'command' + (props.checked ? ' checked' : '')}>
-                { props.checked && <i className="icon-tick"></i> }
-                <span className="command-name">{props.text}</span>
-                <span className="command-short-cut">{props.secondaryText}</span>
-            </span>
-        </li>
+        <React.Fragment>
+            <li ref={itemRef} className={className.join(' ')} onClick={handleClick}>
+                <span className='command'>
+                    { props.checked && <i className="icon-tick"></i> }
+                    <span className="command-name">{props.text}</span>
+                    <span className="command-short-cut">{props.secondaryText}</span>
+                    { subMenuProps && <i className="icon-arrow-right"></i> }
+                </span>
+            </li>
+            { subMenuProps && showSubMenu && <Menu items={subMenuProps.items} position={subMenuPosition} /> }
+        </React.Fragment>
     );
 
 }
@@ -51,6 +87,8 @@ export default function Menu(props) {
                                 onClick={item.onClick}
                                 text={item.text}
                                 secondaryText={item.secondaryText}
+                                disabled={item.disabled}
+                                subMenuProps={item.subMenuProps}
                             />);
                         }
                     })

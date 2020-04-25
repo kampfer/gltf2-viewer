@@ -85,6 +85,7 @@ const icons = [
     { name: 'hidden', id: 'path13646-9', left: 19, top: 20 },
     { name: 'tick', id: 'path27826', left: 10, top: 28 },
     { name: 'mouse-left', id: 'path10927', left: 0, top: 21 },
+    { name: 'arrow-right', id: 'path9518-7-7', left: 2, top: 28}
 ];
 
 let svg = fs.readFileSync(path.join(svgDir, 'icons.svg')).toString();

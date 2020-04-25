@@ -51,9 +51,32 @@
 
         }
 
-        &:hover {
+        &:hover:not(.disabled) {
             background-color: #094771;
             color: #fff;
+        }
+
+        &.disabled {
+            color: #8a8886;
+        }
+
+        &.checked {
+
+            .command {
+
+                padding-left: 0px;
+
+            }
+
+        }
+
+        &.with-sub-menu {
+
+            .command {
+
+                padding-right: 0px;
+
+            }
         }
 
     }
