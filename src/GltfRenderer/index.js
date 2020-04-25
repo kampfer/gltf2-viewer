@@ -162,9 +162,11 @@ export default class GltfRenderer extends React.Component {
         }
 
         // 动画
-        this._mixer = new AnimationMixer(gltf.animations);
-        // 计时器
-        this._clock = new Clock();
+        if (gltf.animations && gltf.animations.length > 0) {
+            this._mixer = new AnimationMixer([gltf.animations[0]]);
+            // 计时器
+            this._clock = new Clock();
+        }
 
         // 根据scene的尺寸计算cameraHelper的尺寸
         scene.traverse(function (child) {
@@ -193,7 +195,7 @@ export default class GltfRenderer extends React.Component {
 
             this.webglRenderer.clear();
 
-            this._mixer.update(this._clock.getDeltaTime());
+            if (this._mixer) this._mixer.update(this._clock.getDeltaTime());
 
             let camera = this._cameras[this._activeCameraType];
             this.webglRenderer.render(backgroundScene, camera);
