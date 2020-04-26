@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Menu from '../Menu';
 
 import './index.less';
@@ -7,33 +7,38 @@ export default function Button(props) {
 
     const menuProps = props.menuProps;
 
-    const calculateMenuPosition = React.useCallback((elem) => {
-        const bounding = elem.getBoundingClientRect();
-        return {left: bounding.left, top: bounding.top + bounding.height};
-    }, []);
-
-    const [selected, setSelected] = React.useState(false);
+    const [active, activate] = React.useState(false);
     const [menuPosition, setMenuPosition] = React.useState({});
 
-    // const buttonRef = React.useRef(null);
+    const buttonRef = useRef();
 
-    const handleClick = function (e) {
-
-        if (menuProps) {
-            const position = calculateMenuPosition(e.currentTarget);
-            setMenuPosition(position);
-        }
-
-        setSelected(!selected);
-
-        if (props.onClick) props.onClick(e, buttonRef.current);
-
+    // 点击button显示menu
+    const handleClick = function () {
+        activate(true);
     };
 
+    // 计算menu位置
+    useEffect(() => {
+        console.log('getBoundingClientRect in button');
+        const bounding = buttonRef.current.getBoundingClientRect();
+        setMenuPosition({left: bounding.left, top: bounding.top + bounding.height});
+    }, [menuProps.text]);
+
+    // 点击body隐藏menu
+    useEffect(() => {
+        function blur() {
+            activate(false);
+        }
+
+        document.body.addEventListener('click', blur, false);
+
+        return () => document.body.removeEventListener('click', blur);
+    }, [menuProps.text]);
+
     return (
-        <button className={`button ${selected ? 'selected' : ''}`} onClick={handleClick}>
+        <button className={`button ${active ? 'selected' : ''}`} onClick={handleClick} ref={buttonRef}>
             <span className="button-label">{props.text}</span>
-            { menuProps && <Menu items={menuProps.items} position={menuPosition} hidden={!selected}/> }
+            { menuProps && <Menu items={menuProps.items} position={menuPosition} hidden={!active}/> }
         </button>
     );
 
