@@ -64,10 +64,10 @@ export default function TopBar(props) {
                                 key: clip.uid,
                                 text: clip.name,
                                 onClick: () => {
-                                    if (clip.isActivated) {
-                                        playAnimation(clip);
-                                    } else {
+                                    if (clip.isActivated()) {
                                         stopAnimation(clip);
+                                    } else {
+                                        playAnimation(clip);
                                     }
                                 },
                             }))

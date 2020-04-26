@@ -219,20 +219,14 @@ export default class GltfRenderer extends React.Component {
         animate();
     }
 
-    startRenderLater() {
-        clearTimeout(this._startRenderTimer);
-        this._startRenderTimer = setTimeout(() => {
-            let props = this.props,
-                gltf = props.gltf;
-            if (gltf) {
-                this.stopRender();
-                this.webglRenderer.setViewport(0, 0, props.width, props.height);
-                this.renderGltf(gltf, props.activeCameraType);
-                for(let i = 0, l = props.activatedAnimationClips.length; i < l; i++) {
-                    this._mixer.playClip(props.activatedAnimationClips[i]);
-                }
-            }
-        }, 100);
+    startRenderImmediately() {
+        let props = this.props,
+            gltf = props.gltf;
+        if (gltf) {
+            this.stopRender();
+            this.webglRenderer.setViewport(0, 0, props.width, props.height);
+            this.renderGltf(gltf, props.activeCameraType);
+        }
     }
 
     componentDidMount() {
@@ -243,7 +237,7 @@ export default class GltfRenderer extends React.Component {
         let clearColor = window.getComputedStyle(canvas).backgroundColor;
         this.webglRenderer.setClearColor(new Color(clearColor));
 
-        this.startRenderLater();
+        this.startRenderImmediately();
 
     }
 
@@ -256,19 +250,13 @@ export default class GltfRenderer extends React.Component {
         let props = this.props;
 
         if (prevProps.gltf !== props.gltf) {
-            this.startRenderLater();
+            this.startRenderImmediately();
         }
         
         if (prevProps.width !== props.width || prevProps.height !== props.height) {
             this.webglRenderer.setViewport(0, 0, props.width, props.height);
         }
-        
-        // if (prevProps.activatedAnimationClips !== props.activatedAnimationClips) {
-        //     this._mixer.stopAllClips();
-        //     for(let i = 0, l = props.activatedAnimationClips.length; i < l; i++) {
-        //         this._mixer.playClip(props.activatedAnimationClips[i]);
-        //     }
-        // }
+
     }
 
     render() {

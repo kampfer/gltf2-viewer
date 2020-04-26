@@ -6,27 +6,34 @@ import './index.less';
 export default function Button(props) {
 
     const menuProps = props.menuProps;
-    const [canShowMenu, showMenu] = React.useState(false);
+
+    const calculateMenuPosition = React.useCallback((elem) => {
+        const bounding = elem.getBoundingClientRect();
+        return {left: bounding.left, top: bounding.top + bounding.height};
+    }, []);
+
+    const [selected, setSelected] = React.useState(false);
     const [menuPosition, setMenuPosition] = React.useState({});
-    const buttonRef = React.useRef(null);
+
+    // const buttonRef = React.useRef(null);
 
     const handleClick = function (e) {
 
         if (menuProps) {
-            const bounding = buttonRef.current.getBoundingClientRect();
-            const position = {left: bounding.left, top: bounding.top + bounding.height};
+            const position = calculateMenuPosition(e.currentTarget);
             setMenuPosition(position);
-            showMenu(!canShowMenu);
         }
-        
+
+        setSelected(!selected);
+
         if (props.onClick) props.onClick(e, buttonRef.current);
 
     };
 
     return (
-        <button className={`button ${canShowMenu ? 'selected' : ''}`} onClick={handleClick} ref={buttonRef}>
+        <button className={`button ${selected ? 'selected' : ''}`} onClick={handleClick}>
             <span className="button-label">{props.text}</span>
-            { menuProps && canShowMenu && <Menu items={menuProps.items} position={menuPosition}/> }
+            { menuProps && <Menu items={menuProps.items} position={menuPosition} hidden={!selected}/> }
         </button>
     );
 
