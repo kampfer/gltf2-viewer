@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Layer from '../Layer';
 
 import './index.less';
@@ -9,35 +9,35 @@ function MenuItem(props) {
         subMenuHoverDelay = props.subMenuHoverDelay;
 
     const [subMenuPosition, setSubMenuPosition] = useState({});
-    const [enterTimer, setEnterTimer] = useState(null);
 
-    const calculateSubMenuPosition = React.useCallback((elem) => {
-        const bounding = elem.getBoundingClientRect();
-        return { left: bounding.right, top: bounding.top };
-    }, [subMenuProps]);
+    const liRef = useRef();
 
-    const handleClick = function (e) {
+    useEffect(() => {
+        const bounding = liRef.current.getBoundingClientRect();
+        setSubMenuPosition({ left: bounding.right, top: bounding.top });
+    }, [props.uKey]);
+
+    const handleClick = useCallback(function (e) {
         // 阻止冒泡，避免点击被禁用的item时隐藏menu
-        if (props.disabled) e.stopPropagation();
+        e.stopPropagation();
         if (!props.disabled && props.onClick) props.onClick({key: props.uKey});
-    };
+    }, [props.uKey]);
 
-    const handleMouseEnter = function (e) {
+    let enterTimer = null;
+
+    const handleMouseEnter = useCallback(function (e) {
         clearTimeout(enterTimer);
 
-        if (props.disabled) return;
-
-        let position = calculateSubMenuPosition(e.currentTarget);
-        setSubMenuPosition(position);
-
-        setEnterTimer(setTimeout(function () {
+        enterTimer = setTimeout(function () {
             if (props.onMouseEnter) props.onMouseEnter({key: props.uKey});
-        }, subMenuHoverDelay));
-    }
+        }, subMenuHoverDelay);
+    }, [props.uKey]);
 
-    const handleMouseLeave = function (e) {
+    // 使用usecallback保证不生成新的回调函数，这样可以避免重新绑定事件回调
+    // 如果不这样做，因为新的回调函数和旧回调函数是不同的函数对象，所以旧回调函数会被取消绑定并销毁，导致取到错误的enterTimer
+    const handleMouseLeave = useCallback(function (e) {
         clearTimeout(enterTimer);
-    }
+    }, [props.uKey]);
 
     const className = ['menu-item'];
 
@@ -48,7 +48,7 @@ function MenuItem(props) {
 
     return (
         <React.Fragment>
-            <li className={className.join(' ')} onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <li ref={liRef} className={className.join(' ')} onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                 <span className='command'>
                     { props.checked && <i className="icon-tick"></i> }
                     <span className="command-name">{props.text}</span>
@@ -71,10 +71,10 @@ export default function Menu(props) {
 
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const handleMouseEnterOfItem = function ({key}) {
-        setSelectedItem(key);
-    };
+    // 使用memo存储函数，只要item不变，每次会取到同一个处理函数，避免冗余的删除和绑定事件操作
+    const handleMouseEnterOfItem = useMemo(() => ({key}) => setSelectedItem(key), [props.uKey]);
 
+    // 隐藏menu时将选中的item重置为空
     useEffect(() => {
         if (props.hidden) setSelectedItem(null);
     }, [props.hidden]);
