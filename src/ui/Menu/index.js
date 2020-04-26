@@ -15,7 +15,7 @@ function MenuItem(props) {
     useEffect(() => {
         const bounding = liRef.current.getBoundingClientRect();
         setSubMenuPosition({ left: bounding.right, top: bounding.top });
-    }, [props.uKey]);
+    }, [subMenuProps && props.selected]);
 
     const handleClick = useCallback(function (e) {
         // 阻止冒泡，避免点击被禁用的item时隐藏menu
