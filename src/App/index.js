@@ -32,6 +32,7 @@ export default class App extends React.Component {
             activatedAnimationClips: [],
             playAnimation: this.playAnimation.bind(this),
             stopAnimation: this.stopAnimation.bind(this),
+            stopAllAnimations: this.stopAllAnimations.bind(this),
             ...this.calculateLayout(),
         };
 
@@ -90,6 +91,17 @@ export default class App extends React.Component {
             let activatedAnimationClips = this.state.activatedAnimationClips;
             this.setState({activatedAnimationClips: [...activatedAnimationClips, clip]});
         }
+    }
+
+    stopAllAnimations() {
+
+        let renderer = this.rendererRef.current;
+
+        if (renderer) {
+            renderer.stopAllClips();
+            this.setState({activatedAnimationClips: []});
+        }
+
     }
 
     stopAnimation(clip) {

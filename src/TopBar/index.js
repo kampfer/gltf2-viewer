@@ -23,7 +23,7 @@ function restoreWin() {
 
 export default function TopBar(props) {
 
-    const { gltf, playAnimation, stopAnimation } = useContext(AppStateContext);
+    const { gltf, playAnimation, stopAnimation, stopAllAnimations } = useContext(AppStateContext);
 
     let separatorNum = 0,
         hasAnimations = gltf && gltf.animations && gltf.animations.length > 0;
@@ -67,6 +67,8 @@ export default function TopBar(props) {
                                     if (clip.isActivated()) {
                                         stopAnimation(clip);
                                     } else {
+                                        // 不允许同时运行多个动画
+                                        stopAllAnimations();
                                         playAnimation(clip);
                                     }
                                 },

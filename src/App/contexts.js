@@ -7,4 +7,5 @@ function doNothing() {}
 export const AppStateContext = React.createContext({
     playAnimation: doNothing,
     stopAnimation: doNothing,
+    stopAllAnimations: doNothing,
 });

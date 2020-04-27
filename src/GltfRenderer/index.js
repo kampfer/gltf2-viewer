@@ -103,6 +103,10 @@ export default class GltfRenderer extends React.Component {
         if (this._mixer) this._mixer.stopClip(clip);
     }
 
+    stopAllClips() {
+        if (this._mixer) this._mixer.stopAllClips();
+    }
+
     renderGltf(gltf, cameraType) {
         console.log('gltf:', gltf);
 
