@@ -395,15 +395,13 @@ export default class GLTFParser {
 
             if (children) {
 
-                for(let i = 0, l = children.length; i < l; i++) {
+                return Promise.all(children.map(child => this._buildNodeHierachy(child, node)));
 
-                    this._buildNodeHierachy(children[i], node);
+            } else {
 
-                }
+                return node;
 
             }
-
-            return node;
 
         });
 
