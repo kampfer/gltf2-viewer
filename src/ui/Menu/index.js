@@ -8,14 +8,9 @@ function MenuItem(props) {
     let subMenuProps = props.subMenuProps,
         subMenuHoverDelay = props.subMenuHoverDelay;
 
-    const [subMenuPosition, setSubMenuPosition] = useState({});
+    const [subMenuPosition, setSubMenuPosition] = useState(null);
 
     const liRef = useRef();
-
-    useEffect(() => {
-        const bounding = liRef.current.getBoundingClientRect();
-        setSubMenuPosition({ left: bounding.right, top: bounding.top });
-    }, [subMenuProps && props.selected]);
 
     const handleClick = useCallback(function (e) {
         // 阻止冒泡，避免点击被禁用的item时隐藏menu
@@ -27,6 +22,9 @@ function MenuItem(props) {
 
     const handleMouseEnter = useCallback(function (e) {
         clearTimeout(enterTimer);
+
+        const bounding = liRef.current.getBoundingClientRect();
+        setSubMenuPosition({ left: bounding.right, top: bounding.top });
 
         enterTimer = setTimeout(function () {
             if (props.onMouseEnter) props.onMouseEnter({key: props.uKey});
