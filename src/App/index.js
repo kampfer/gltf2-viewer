@@ -62,9 +62,7 @@ export default class App extends React.Component {
             hideFileReader: true,
             activeCameraType: constants.OBJECT_TYPE_PERSPECTIVE_CAMERA,
             viewType: 'mesh',
-            activatedAnimationClips: []
-        }, () => {
-            if (gltf.animations && gltf.animations.length > 0) this.playAnimation(gltf.animations[0]);
+            activatedAnimationClips: gltf.animations && gltf.animations.length > 0 ? [gltf.animations[0]] : []
         });
     }
 

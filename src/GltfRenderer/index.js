@@ -14,6 +14,7 @@ import {
     constants,
     Color,
 } from 'webglRenderEngine';
+import { AppStateContext } from '../App/contexts';
 
 import './index.less';
 
@@ -22,10 +23,6 @@ export default class GltfRenderer extends React.Component {
     constructor(props) {
 
         super(props);
-
-        this.state = {
-            gltf: props.gltf
-        };
 
         this.webglCanvas = React.createRef();
 
@@ -177,6 +174,7 @@ export default class GltfRenderer extends React.Component {
         if (gltf.animations && gltf.animations.length > 0) {
 
             this._mixer = new AnimationMixer(gltf.animations);
+            this.context.activatedAnimationClips.forEach(clip => this._mixer.playClip(clip));
 
             // 计时器
             this._clock = new Clock();
@@ -227,10 +225,14 @@ export default class GltfRenderer extends React.Component {
         let props = this.props,
             gltf = props.gltf;
         if (gltf) {
-            this.stopRender();
             this.webglRenderer.setViewport(0, 0, props.width, props.height);
             this.renderGltf(gltf, props.activeCameraType);
         }
+    }
+
+    restartRender() {
+        this.stopRender();
+        this.startRenderImmediately();
     }
 
     componentDidMount() {
@@ -253,14 +255,11 @@ export default class GltfRenderer extends React.Component {
     componentDidUpdate(prevProps) {
         let props = this.props;
 
-        if (prevProps.gltf !== props.gltf) {
+        if (prevProps.width !== props.width ||
+            prevProps.height !== props.height ||
+            prevProps.gltf !== props.gltf) {
             this.startRenderImmediately();
         }
-        
-        if (prevProps.width !== props.width || prevProps.height !== props.height) {
-            this.webglRenderer.setViewport(0, 0, props.width, props.height);
-        }
-
     }
 
     render() {
@@ -273,3 +272,5 @@ export default class GltfRenderer extends React.Component {
     }
 
 }
+
+GltfRenderer.contextType = AppStateContext;
