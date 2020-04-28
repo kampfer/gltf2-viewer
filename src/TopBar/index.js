@@ -23,7 +23,7 @@ function restoreWin() {
 
 export default function TopBar(props) {
 
-    const { gltf, playAnimation, stopAnimation, stopAllAnimations } = useContext(AppStateContext);
+    const { gltf, playAnimation, stopAnimation, stopAllAnimations, activatedAnimationClips } = useContext(AppStateContext);
 
     let separatorNum = 0,
         hasAnimations = gltf && gltf.animations && gltf.animations.length > 0;
@@ -60,7 +60,7 @@ export default function TopBar(props) {
                         subMenuProps: hasAnimations ? {
                             items: gltf.animations.map(clip => ({
                                 canCheck: true,
-                                isChecked: clip.isActivated(),
+                                isChecked: activatedAnimationClips.indexOf(clip) > -1,
                                 key: clip.uid,
                                 text: clip.name,
                                 onClick: () => {

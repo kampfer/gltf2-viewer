@@ -87,7 +87,7 @@ export default class App extends React.Component {
         if (renderer) {
             renderer.playClip(clip);
             let activatedAnimationClips = this.state.activatedAnimationClips;
-            this.setState({activatedAnimationClips: [...activatedAnimationClips, clip]});
+            this.setState({activatedAnimationClips: [clip]});
         }
     }
 
@@ -260,7 +260,6 @@ export default class App extends React.Component {
                                             height={state.rendererLayout.height}
                                             activeCameraType={state.activeCameraType}
                                             viewType={state.viewType}
-                                            activatedAnimationClips={state.activatedAnimationClips}
                                         />
                                     </div>
                                 </Grid>
