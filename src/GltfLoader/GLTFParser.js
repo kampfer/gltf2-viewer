@@ -140,6 +140,9 @@ export default class GLTFParser {
                 case 'skin':
                     parsePromise = this.parseSkin(index);
                     break;
+                case 'texture':
+                    parsePromise = this.parseTexture(index);
+                    break;
                 default:
                     console.warn('GLTFParser：不支持的属性类型：' + type);
             }
@@ -826,6 +829,10 @@ export default class GLTFParser {
 
         return material;
     }
+
+    parseTexture() {}
+
+    parseImage() {}
 
     parseAccessor(accessorIndex) {
         let data = this._data,
