@@ -31,6 +31,8 @@ const {
     OBJECT_TYPE_ORTHOGRAPHIC_CAMERA,
     OBJECT_TYPE_MESH,
     OBJECT_TYPE_SKINNED_MESH,
+    RGBA_FORMAT,
+    RGB_FORMAT,
 } = constants;
 
 // 将gltf中的attribute的名称映射为渲染引擎的geometry对象存储attribute的名称
@@ -89,6 +91,26 @@ const DATA_TYPE = {
     GLTF: 'GLTF'
 };
 
+const mimeTypeToFormat = {
+    'image/png': RGBA_FORMAT,
+    'image/jpeg': RGB_FORMAT
+};
+
+const webglFilters = {
+    9728: 'NearestFilter',
+    9729: 'LinearFilter',
+    9984: 'NearestMipmapNearestFilter',
+    9985: 'LinearMipmapNearestFilter',
+    9986: 'NearestMipmapLinearFilter',
+    9987: 'LinearMipmapLinearFilter'
+};
+
+const webglWrappings = {
+    33071: 'ClampToEdgeWrapping',
+    33648: 'MirroredRepeatWrapping',
+    10497: 'RepeatWrapping'
+};
+
 export default class GLTFParser {
 
     constructor(opts) {
@@ -142,6 +164,9 @@ export default class GLTFParser {
                     break;
                 case 'texture':
                     parsePromise = this.parseTexture(index);
+                    break;
+                case 'image':
+                    parsePromise = this.parseImage(index);
                     break;
                 default:
                     console.warn('GLTFParser：不支持的属性类型：' + type);
@@ -622,11 +647,9 @@ export default class GLTFParser {
             Promise.all(primitives.map(primitive => this.loadGeometry(primitive)))
         );
 
-        for(let i = 0, l = primitives.length; i < l; i++) {
-
-            materialParsePromises.push(this.parseMaterial(primitives[i].material));
-
-        }
+        parsePromises.push(
+            Promise.all(primitives.map(primitive => this.parseMaterial(primitive.material)))
+        )
 
         parsePromises.push(materialParsePromises);
 
@@ -814,25 +837,135 @@ export default class GLTFParser {
 
     }
 
+    // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#reference-pbrmetallicroughness
     parseMaterial(materialIndex) {
-        let data = this._data,
-            material = new Material();
 
-        if (data.materials && data.materials[materialIndex]) {
-            let materialDef = data.materials[materialIndex];
-            material.color = new Color(materialDef.pbrMetallicRoughness.baseColorFactor || [1, 1, 1]);
-            material.metallicFactor = materialDef.pbrMetallicRoughness.metallicFactor || 1;
-            material.roughnessFactor = materialDef.pbrMetallicRoughness.roughnessFactor || 1;
+        let data = this._data,
+            material = new Material(),
+            materialDef = data.materials[materialIndex],
+            pbrDef = materialDef.pbrMetallicRoughness,
+            penddings = [];
+
+        material.color = new Color(pbrDef.baseColorFactor || [1, 1, 1, 1]);
+
+        if (pbrDef.baseColorTexture) penddings.push(this._parse('texture', pbrDef.baseColorTexture.index));
+
+        if (penddings.length > 0) {
+
+            return Promise.all(penddings).then(([baseColorTexture]) => {
+
+                material.map = baseColorTexture;
+
+                return material;
+
+            });
+
         } else {
-            material.color = new Color([0, 0, 0, 1]);
+
+            return material;
+
         }
 
-        return material;
     }
 
-    parseTexture() {}
+    parseTexture(index) {
 
-    parseImage() {}
+        let data = this._data,
+            textureDef = data.textures[index];
+
+        if (textureDef.source !== undefined) {
+
+            return this._parse('image', textureDef.source).then((image) => {
+
+                // TODO: image texture
+                let texture = {},
+                    samplerDef = data.samplers[textureDef.sampler],
+                    imageDef = data.images[textureDef.source];
+
+                texture.image = image;
+
+                if (textureDef.name) texture.name = textureDef.name;
+
+                // format
+                if (imageDef.mimeType in mimeTypeToFormat) {
+
+                    texture.format = mimeTypeToFormat[imageDef.mimeType];
+
+                }
+
+                if (samplerDef) {
+
+                    texture.magFilter = webglFilters[samplerDef.magFilter] || 'LinearFilter';
+                    texture.minFilter = webglFilters[samplerDef.minFilter] || 'LinearMipmapLinearFilter';
+                    texture.wrapS = webglWrappings[samplerDef.wrapS] || 'RepeatWrapping';
+                    texture.wrapT = webglWrappings[samplerDef.wrapT] || 'RepeatWrapping';
+
+                }
+
+                return texture;
+
+            });
+
+        }
+
+        return null;
+
+    }
+
+    parseImage(index) {
+
+
+        let data = this._data,
+            imageDef = data.images[index],
+            isObjectUrl = false;
+
+        if (imageDef) {
+
+            let uri = imageDef.uri;
+
+            if (imageDef.bufferView !== undefined) {
+
+                uri = this._parse('bufferView', imageDef.bufferView)
+                    .then(arrayBuffer => {
+
+                        let blob = new Blob([arrayBuffer], {
+                                type: imageDef.mimeType
+                            }),
+                            uri = URL.createObjectURL(blob);
+
+                        isObjectUrl = true;
+
+                        return uri;
+
+                    });
+
+            }
+
+            return Promise.resolve(uri).then((uri) => {
+
+                let image = new Image();
+
+                return new Promise((resolve) => {
+
+                    image.onload = function () {
+
+                        image.onload = null;
+
+                        if (isObjectUrl) URL.revokeObjectURL(uri);
+
+                        resolve(image);
+
+                    }
+
+                    image.src = uri;
+
+                });
+
+            });
+
+        }
+
+    }
 
     parseAccessor(accessorIndex) {
         let data = this._data,
