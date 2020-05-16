@@ -18,6 +18,7 @@ import {
     Skeleton,
     Bone,
     SkinnedMesh,
+    Texture,
 } from 'webglRenderEngine';
 import GLTFBinaryReader from './GLTFBinaryReader';
 import CameraHelper from './CameraHelper';
@@ -33,6 +34,15 @@ const {
     OBJECT_TYPE_SKINNED_MESH,
     RGBA_FORMAT,
     RGB_FORMAT,
+    NEAREST_FILTER,
+    LINEAR_FILTER,
+    NEAREST_MIPMAP_NEAEST_FILTER,
+    NEAREST_MIPMAP_LINEAR_FILTER,
+    LINEAR_MIPMAP_NEAREST_FILTER,
+    LINEAR_MIPMAP_LINEAR_FILTER,
+    REPEAT_WRAPPING,
+    MIRRORED_REPEAT_WRAPPING,
+    CLAMP_TO_EDGE_WRAPPING,
 } = constants;
 
 // 将gltf中的attribute的名称映射为渲染引擎的geometry对象存储attribute的名称
@@ -97,18 +107,18 @@ const mimeTypeToFormat = {
 };
 
 const webglFilters = {
-    9728: 'NearestFilter',
-    9729: 'LinearFilter',
-    9984: 'NearestMipmapNearestFilter',
-    9985: 'LinearMipmapNearestFilter',
-    9986: 'NearestMipmapLinearFilter',
-    9987: 'LinearMipmapLinearFilter'
+    9728: NEAREST_FILTER,
+    9729: LINEAR_FILTER,
+    9984: NEAREST_MIPMAP_LINEAR_FILTER,
+    9985: NEAREST_MIPMAP_NEAEST_FILTER,
+    9986: LINEAR_MIPMAP_NEAREST_FILTER,
+    9987: LINEAR_MIPMAP_LINEAR_FILTER,
 };
 
 const webglWrappings = {
-    33071: 'ClampToEdgeWrapping',
-    33648: 'MirroredRepeatWrapping',
-    10497: 'RepeatWrapping'
+    33071: CLAMP_TO_EDGE_WRAPPING,
+    33648: MIRRORED_REPEAT_WRAPPING,
+    10497: REPEAT_WRAPPING
 };
 
 export default class GLTFParser {
@@ -877,8 +887,7 @@ export default class GLTFParser {
 
             return this._parse('image', textureDef.source).then((image) => {
 
-                // TODO: image texture
-                let texture = {},
+                let texture = new Texture({image}),
                     samplerDef = data.samplers[textureDef.sampler],
                     imageDef = data.images[textureDef.source];
 
@@ -938,6 +947,10 @@ export default class GLTFParser {
                         return uri;
 
                     });
+
+            } else if (this._type === DATA_TYPE.GLTF && uri) {
+
+                uri = this._loader.urlModifier(uri);
 
             }
 
